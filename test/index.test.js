@@ -18,6 +18,21 @@ describe('Test basic backend behaviour', () => {
       '<title>RLinks - link reducer service</title>'
     );
   });
+
+  test('POST / will receive the URL included in the request body', async () => {
+    const response = await axios.post(
+      `${config.URL}`,
+      { url: 'https://www.youtube.com/watch?v=LPLKOLJAbds' },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const body = response.data;
+    expect(body.url).toEqual('https://www.youtube.com/watch?v=LPLKOLJAbds');
+  });
 });
 
 afterAll(() => {
