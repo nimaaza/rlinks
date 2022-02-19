@@ -1,0 +1,31 @@
+{
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "node": true,
+    "es2021": true,
+    "jest/globals": true
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": "latest"
+  },
+  "plugins": ["jest"],
+  "rules": {
+    "comma-dangle": [
+      "error",
+      {
+        "arrays": "always-multiline",
+        "objects": "always-multiline",
+        "imports": "always-multiline",
+        "exports": "always-multiline",
+        "functions": "never"
+      }
+    ],
+    "indent": ["error", 2],
+    "linebreak-style": ["error", "unix"],
+    "no-console": ["error", { "allow": ["error", "warn"] }],
+    "quotes": ["error", "single"],
+    "semi": ["error", "always"]
+  }
+}
