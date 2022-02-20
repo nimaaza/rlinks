@@ -1,9 +1,15 @@
 require('dotenv').config();
 
-let URL;
+let URL, PORT;
+
+if (process.env.NODE_ENV === 'DEV') {
+  PORT = process.env.PORT;
+} else if (process.env.NODE_ENV === 'TEST') {
+  PORT = process.env.TEST_PORT;
+}
 
 if (['DEV', 'TEST'].includes(process.env.NODE_ENV)) {
-  URL = `${process.env.URL}:${process.env.PORT}`;
+  URL = `${process.env.URL}:${PORT}`;
 } else {
   URL = process.env.PRODUCTION_URL;
 }
@@ -26,7 +32,7 @@ if (process.env.NODE_ENV === 'DEV') {
 
 module.exports = {
   URL,
-  PORT: process.env.PORT,
+  PORT,
   ENV: process.env.NODE_ENV,
   DB_HOST,
   DB_LOGGER,
