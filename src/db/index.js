@@ -1,5 +1,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
+
 const {
+  ENV,
   DB_HOST,
   DB_NAME,
   DB_USERNAME,
@@ -47,5 +49,11 @@ const Link = sequelize.define(
     ],
   }
 );
+
+const initDB = async () => await sequelize.sync();
+
+if (ENV !== 'TEST') {
+  initDB();
+}
 
 module.exports = { sequelize, Link };
