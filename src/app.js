@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 
 const config = require('../config');
+const { Link } = require('./db');
 
 const app = express();
 
@@ -22,6 +23,19 @@ if (['DEV', 'TEST'].includes(config.ENV)) {
 
 app.get('/', (request, response) => {
   response.sendFile('/index.html');
+});
+
+app.get('/:key', async (request, response) => {
+  const shortKey = request.params.key;
+  const link = await Link.findOne({ where: { shortKey } });
+
+  if (link) {
+    return response.redirect(link.url);
+  } else {
+    return response.status(400).json({
+      error: 'This URL has not been shortened!',
+    });
+  }
 });
 
 module.exports = app;

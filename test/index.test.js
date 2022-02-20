@@ -104,6 +104,35 @@ describe('Tests for postfix generator for shortened links', () => {
   });
 });
 
+describe(`Visiting ${config.URL}/${SHORT_KEY} properly redirects to ${LINK}`, () => {
+  beforeAll(async () => {
+    const link = { url: LINK, shortKey: SHORT_KEY };
+    await Link.create(link);
+  });
+
+  test(`GET /${SHORT_KEY} receives a redirect response`, async () => {
+    const response = await axios.get(`${config.URL}/${SHORT_KEY}`);
+    expect(response.request._redirectable._isRedirect).toBe(true);
+  });
+
+  test(`GET /${SHORT_KEY} gets redirected to ${LINK}`, async () => {
+    const response = await axios.get(`${config.URL}/${SHORT_KEY}`);
+    expect(response.request._redirectable._currentUrl).toEqual(LINK);
+  });
+
+  test(`GET /${SHORT_KEY.toLowerCase()} receives a 400 status code with appropriate error message`, async () => {
+    try {
+      await axios.get(`${config.URL}/${SHORT_KEY.toLowerCase()}`);
+    } catch (error) {
+      expect(error.response.status).toBe(400);
+      expect(error.response.data).toHaveProperty('error');
+      expect(error.response.data.error).toContain(
+        'This URL has not been shortened!'
+      );
+    }
+  });
+});
+
 afterAll(async () => {
   await sequelize.drop({ match: /-test$/ });
   await sequelize.close();
