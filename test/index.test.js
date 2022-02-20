@@ -2,6 +2,15 @@ const axios = require('axios');
 
 const config = require('../config');
 const server = require('../index');
+const { sequelize, Link } = require('../src/db');
+
+const SHORT_KEY = 'ABCDEFG';
+const LINK = 'https://www.youtube.com/watch?v=LPLKOLJAbds';
+
+beforeAll(async () => {
+  await sequelize.authenticate();
+  await sequelize.sync({ match: /-test$/ });
+});
 
 describe('Test basic backend behaviour', () => {
   test('GET /live responds with rlinks is live', async () => {
@@ -22,7 +31,7 @@ describe('Test basic backend behaviour', () => {
   test('POST / will receive the URL included in the request body', async () => {
     const response = await axios.post(
       `${config.URL}`,
-      { url: 'https://www.youtube.com/watch?v=LPLKOLJAbds' },
+      { url: LINK },
       {
         headers: {
           'Content-Type': 'application/json',
@@ -31,25 +40,14 @@ describe('Test basic backend behaviour', () => {
     );
 
     const body = response.data;
-    expect(body.url).toEqual('https://www.youtube.com/watch?v=LPLKOLJAbds');
+    expect(body.url).toEqual(LINK);
   });
 });
 
 describe('Basic tests for the database', () => {
-  let sequelize, Link;
-
-  beforeAll(async () => {
-    ({ sequelize, Link } = require('../src/db'));
-  });
-
-  test('Connection to the test database is successful', async () => {
-    await sequelize.authenticate();
-    await sequelize.sync({ match: /-test$/ });
-  });
-
   test('Basic CRUD operations on the Link model work', async () => {
     const link = {
-      url: 'https://www.youtube.com/watch?v=LPLKOLJAbds',
+      url: LINK,
       shortKey: 'AbCdEFG',
     };
 
@@ -77,11 +75,6 @@ describe('Basic tests for the database', () => {
     await readLink.destroy();
     const allLinksInDb = await Link.findAll();
     expect(allLinksInDb).toHaveLength(0);
-  });
-
-  afterAll(async () => {
-    await sequelize.drop({ match: /-test$/ });
-    await sequelize.close();
   });
 });
 
@@ -111,6 +104,8 @@ describe('Tests for postfix generator for shortened links', () => {
   });
 });
 
-afterAll(() => {
+afterAll(async () => {
+  await sequelize.drop({ match: /-test$/ });
+  await sequelize.close();
   server.close();
 });
