@@ -104,7 +104,7 @@ describe('Tests for postfix generator for shortened links', () => {
   });
 });
 
-describe(`Visiting ${config.URL}/${SHORT_KEY} properly redirects to ${LINK}`, () => {
+describe('Tests for proper redirection upon visiting a shortened link', () => {
   beforeAll(async () => {
     const link = { url: LINK, shortKey: SHORT_KEY };
     await Link.create(link);
