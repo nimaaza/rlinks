@@ -85,6 +85,32 @@ describe('Basic tests for the database', () => {
   });
 });
 
+describe('Tests for postfix generator for shortened links', () => {
+  const { randomAlphaNumbericString } = require('../src/helpers/randomize');
+  const randomStringLength = 7;
+  const numberOfStringsToCompare = 10000;
+  let randomString;
+
+  beforeEach(() => {
+    randomString = randomAlphaNumbericString(randomStringLength);
+  });
+
+  test(`Expect return value to be a string of length ${randomStringLength}`, () => {
+    expect(typeof randomString).toBe('string');
+    expect(randomString).toHaveLength(randomStringLength);
+  });
+
+  test(`Expect ${numberOfStringsToCompare} generated strings to have different values`, () => {
+    let oldPrefix = randomAlphaNumbericString(randomStringLength);
+
+    for (let i = 0; i < numberOfStringsToCompare; i++) {
+      let newPostfix = randomAlphaNumbericString(randomStringLength);
+      expect(newPostfix).not.toEqual(oldPrefix);
+      oldPrefix = newPostfix;
+    }
+  });
+});
+
 afterAll(() => {
   server.close();
 });
