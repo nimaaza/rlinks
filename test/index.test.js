@@ -133,6 +133,34 @@ describe('Tests for proper redirection upon visiting a shortened link', () => {
   });
 });
 
+describe('Tests for the transformer of links to short links', () => {
+  let count;
+
+  beforeAll(async () => {
+    const response = await Link.findOne({ where: { url: LINK } });
+    count = response.count;
+  });
+
+  test('Should return falsy for an invalid URL', async () => {
+    expect(await Link.transformer('invalid_url')).toBeFalsy();
+  });
+
+  test(`Should return ${SHORT_KEY} for existing ${LINK}`, async () => {
+    expect(await Link.transformer(LINK)).toEqual(SHORT_KEY);
+  });
+
+  test('Should increment count when URL has already been shortened', async () => {
+    const response = await Link.findOne({ where: { url: LINK } });
+    expect(response.count).toBe(count + 1);
+  });
+
+  test('Should return a new key for a valid URL not existing in the database', async () => {
+    const key = await Link.transformer('https://www.google.com/');
+    expect(typeof key).toEqual('string');
+    expect(key).toHaveLength(7);
+  });
+});
+
 afterAll(async () => {
   await sequelize.drop({ match: /-test$/ });
   await sequelize.close();
