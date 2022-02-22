@@ -5,11 +5,16 @@ const server = require('../index');
 const { sequelize, Link } = require('../src/db');
 
 const SHORT_KEY = 'ABCDEFG';
-const LINK = 'https://www.youtube.com/watch?v=LPLKOLJAbds';
+const URL = 'https://www.youtube.com/watch?v=LPLKOLJAbds';
+const youTubeLink = { url: URL, shortKey: SHORT_KEY };
 
 beforeAll(async () => {
   await sequelize.authenticate();
-  await sequelize.sync({ match: /-test$/ });
+});
+
+afterAll(async () => {
+  await sequelize.close();
+  server.close();
 });
 
 describe('Test basic backend behaviour', () => {
@@ -31,7 +36,7 @@ describe('Test basic backend behaviour', () => {
   test('POST / will receive the URL included in the request body', async () => {
     const response = await axios.post(
       `${config.URL}`,
-      { url: LINK },
+      { url: URL },
       {
         headers: {
           'Content-Type': 'application/json',
@@ -40,28 +45,29 @@ describe('Test basic backend behaviour', () => {
     );
 
     const body = response.data;
-    expect(body.url).toEqual(LINK);
+    expect(body.url).toEqual(URL);
   });
 });
 
 describe('Basic tests for the database', () => {
-  test('Basic CRUD operations on the Link model work', async () => {
-    const link = {
-      url: LINK,
-      shortKey: 'AbCdEFG',
-    };
+  beforeEach(async () => {
+    await sequelize.sync({ force: true, match: /-test$/ });
+  });
 
-    const createdLink = await Link.create(link);
-    expect(createdLink.url).toEqual(link.url);
-    expect(createdLink.shortKey).toEqual(link.shortKey);
+  test('Basic CRUD operations on the Link model work', async () => {
+    const createdLink = await Link.create(youTubeLink);
+    expect(createdLink.url).toEqual(youTubeLink.url);
+    expect(createdLink.shortKey).toEqual(youTubeLink.shortKey);
     expect(createdLink.count).toBe(1);
     expect(createdLink).toHaveProperty('createdAt');
     expect(createdLink).toHaveProperty('updatedAt');
     expect(createdLink).toHaveProperty('id');
 
-    const readLink = await Link.findOne({ where: { shortKey: link.shortKey } });
-    expect(readLink.url).toEqual(link.url);
-    expect(readLink.shortKey).toEqual(link.shortKey);
+    const readLink = await Link.findOne({
+      where: { shortKey: youTubeLink.shortKey },
+    });
+    expect(readLink.url).toEqual(youTubeLink.url);
+    expect(readLink.shortKey).toEqual(youTubeLink.shortKey);
     expect(readLink.count).toBe(1);
     expect(readLink).toHaveProperty('createdAt');
     expect(readLink).toHaveProperty('updatedAt');
@@ -82,13 +88,9 @@ describe('Tests for postfix generator for shortened links', () => {
   const { randomAlphaNumbericString } = require('../src/helpers/randomize');
   const randomStringLength = 7;
   const numberOfStringsToCompare = 10000;
-  let randomString;
-
-  beforeEach(() => {
-    randomString = randomAlphaNumbericString(randomStringLength);
-  });
 
   test(`Expect return value to be a string of length ${randomStringLength}`, () => {
+    const randomString = randomAlphaNumbericString(randomStringLength);
     expect(typeof randomString).toBe('string');
     expect(randomString).toHaveLength(randomStringLength);
   });
@@ -105,9 +107,9 @@ describe('Tests for postfix generator for shortened links', () => {
 });
 
 describe('Tests for proper redirection upon visiting a shortened link', () => {
-  beforeAll(async () => {
-    const link = { url: LINK, shortKey: SHORT_KEY };
-    await Link.create(link);
+  beforeEach(async () => {
+    await sequelize.sync({ force: true, match: /-test$/ });
+    await Link.create(youTubeLink);
   });
 
   test(`GET /${SHORT_KEY} receives a redirect response`, async () => {
@@ -115,9 +117,9 @@ describe('Tests for proper redirection upon visiting a shortened link', () => {
     expect(response.request._redirectable._isRedirect).toBe(true);
   });
 
-  test(`GET /${SHORT_KEY} gets redirected to ${LINK}`, async () => {
+  test(`GET /${SHORT_KEY} gets redirected to ${URL}`, async () => {
     const response = await axios.get(`${config.URL}/${SHORT_KEY}`);
-    expect(response.request._redirectable._currentUrl).toEqual(LINK);
+    expect(response.request._redirectable._currentUrl).toEqual(URL);
   });
 
   test(`GET /${SHORT_KEY.toLowerCase()} receives a 400 status code with appropriate error message`, async () => {
@@ -134,23 +136,19 @@ describe('Tests for proper redirection upon visiting a shortened link', () => {
 });
 
 describe('Tests for the transformer of links to short links', () => {
-  let count;
-
-  beforeAll(async () => {
-    const response = await Link.findOne({ where: { url: LINK } });
-    count = response.count;
+  beforeEach(async () => {
+    await sequelize.sync({ force: true, match: /-test$/ });
+    await Link.create(youTubeLink);
   });
 
   test('Should return falsy for an invalid URL', async () => {
     expect(await Link.transformer('invalid_url')).toBeFalsy();
   });
 
-  test(`Should return ${SHORT_KEY} for existing ${LINK}`, async () => {
-    expect(await Link.transformer(LINK)).toEqual(SHORT_KEY);
-  });
-
-  test('Should increment count when URL has already been shortened', async () => {
-    const response = await Link.findOne({ where: { url: LINK } });
+  test(`Should return ${SHORT_KEY} for existing ${URL} incrementing its count`, async () => {
+    const count = (await Link.findOne({ where: { url: URL } })).count;
+    expect(await Link.transformer(URL)).toEqual(SHORT_KEY);
+    const response = await Link.findOne({ where: { url: URL } });
     expect(response.count).toBe(count + 1);
   });
 
@@ -159,10 +157,4 @@ describe('Tests for the transformer of links to short links', () => {
     expect(typeof key).toEqual('string');
     expect(key).toHaveLength(7);
   });
-});
-
-afterAll(async () => {
-  await sequelize.drop({ match: /-test$/ });
-  await sequelize.close();
-  server.close();
 });
