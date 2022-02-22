@@ -146,15 +146,19 @@ describe('Tests for the transformer of links to short links', () => {
   });
 
   test(`Should return ${SHORT_KEY} for existing ${URL} incrementing its count`, async () => {
-    const count = (await Link.findOne({ where: { url: URL } })).count;
-    expect(await Link.transformer(URL)).toEqual(SHORT_KEY);
-    const response = await Link.findOne({ where: { url: URL } });
-    expect(response.count).toBe(count + 1);
+    const responseBefore = await Link.findOne({ where: { url: URL } });
+    await Link.transformer(URL);
+    const responseAfter = await Link.findOne({ where: { url: URL } });
+
+    expect(responseAfter.shortKey).toEqual(responseBefore.shortKey);
+    expect(responseAfter.count).toEqual(responseBefore.count + 1);
   });
 
   test('Should return a new key for a valid URL not existing in the database', async () => {
-    const key = await Link.transformer('https://www.google.com/');
-    expect(typeof key).toEqual('string');
-    expect(key).toHaveLength(7);
+    const response = await Link.transformer('https://www.google.com/');
+    const shortKey = response.shortKey;
+
+    expect(typeof shortKey).toEqual('string');
+    expect(shortKey).toHaveLength(7);
   });
 });
