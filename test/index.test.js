@@ -37,11 +37,7 @@ describe('Test basic backend behaviour', () => {
     const response = await axios.post(
       `${config.URL}`,
       { url: URL },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+      { headers: { 'Content-Type': 'application/json' } }
     );
 
     const body = response.data;
