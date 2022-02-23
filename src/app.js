@@ -38,4 +38,15 @@ app.get('/:key', async (request, response) => {
   }
 });
 
+app.post('/shorten', async (request, response) => {
+  const url = request.body.url;
+  const shortLink = await Link.transformer(url);
+
+  if (shortLink) {
+    response.json(shortLink);
+  } else {
+    response.json({ error: 'Invalid URL!' });
+  }
+});
+
 module.exports = app;

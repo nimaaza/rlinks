@@ -158,3 +158,36 @@ describe('Tests for the transformer of links to short links', () => {
     expect(shortKey).toHaveLength(7);
   });
 });
+
+describe('Tests for end-point at /shorten', () => {
+  const doAxiosPost = (endpoint, data) => {
+    return axios.post(
+      `${config.URL}/${endpoint}`,
+      { url: data },
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+  };
+
+  beforeEach(async () => {
+    await sequelize.sync({ force: true, match: /-test$/ });
+    await Link.create(youTubeLink);
+  });
+
+  test('POST /shorten will result in an error message for an invalid URL', async () => {
+    const response = await doAxiosPost('shorten', 'invalid_link');
+    expect(response.data).toEqual({ error: 'Invalid URL!' });
+  });
+
+  test('POST /shorten with https://www.google.com in request body will response with a valid short key', async () => {
+    const response = await doAxiosPost('shorten', 'https://www.google.com');
+    expect(typeof response.data.shortKey).toEqual('string');
+    expect(response.data.shortKey).toHaveLength(7);
+    expect(response.data.count).toBe(1);
+  });
+
+  test(`POST /shorten with ${URL} in request body will response with ${SHORT_KEY} and number of times link is created`, async () => {
+    const response = await doAxiosPost('shorten', URL);
+    expect(response.data.shortKey).toEqual(SHORT_KEY);
+    expect(response.data.count).toBe(2);
+  });
+});
