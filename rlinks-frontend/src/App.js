@@ -1,28 +1,24 @@
 import React, { useState } from 'react';
+
 import './App.css';
+import LinkDisplay from './components/LinkDisplay';
+import { fetchShortLinkFor } from './helpers';
 
 const App = () => {
   const [url, setUrl] = useState('');
   const [display, setDisplay] = useState(null);
 
-  const onSubmit = e => {
+  const onSubmit = async e => {
     e.preventDefault();
 
-    fetch('/shorten', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url }),
-    })
-      .then(response => response.json())
-      .then(data => {
-        setDisplay(data);
-      });
+    const data = await fetchShortLinkFor(url);
+    setDisplay(data);
   };
 
   return (
     <React.Fragment>
       <form onSubmit={onSubmit}>
-        <label htmlFor='url'>URL: </label>
+        <label htmlFor="url">URL: </label>
         <input
           type="text"
           name="url"
@@ -31,15 +27,7 @@ const App = () => {
         />
         <input type="submit" />
       </form>
-      {display && (
-        <p>
-          Your shortened link is:{' '}
-          <a
-            href={`http://localhost:3000/${display.shortKey}`}
-          >{`http://localhost:3000/${display.shortKey}`}</a>{' '}
-          and {display.count} people have created this link.
-        </p>
-      )}
+      {display && <LinkDisplay {...display} />}
     </React.Fragment>
   );
 };
