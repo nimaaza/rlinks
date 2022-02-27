@@ -8,6 +8,12 @@ const SHORT_KEY = 'ABCDEFG';
 const URL = 'https://www.youtube.com/watch?v=LPLKOLJAbds';
 const youTubeLink = { url: URL, shortKey: SHORT_KEY };
 
+const doAxiosPost = (endpoint, data) => {
+  return axios.post(`${config.URL}/${endpoint}`, data, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
 beforeAll(async () => {
   await sequelize.authenticate();
 });
@@ -131,7 +137,7 @@ describe('Tests for proper redirection upon visiting a shortened link', () => {
   });
 });
 
-describe('Tests for the transformer of links to short links', () => {
+describe('Tests for the transforming of links to short links', () => {
   beforeEach(async () => {
     await sequelize.sync({ force: true, match: /-test$/ });
     await Link.create(youTubeLink);
@@ -159,34 +165,28 @@ describe('Tests for the transformer of links to short links', () => {
   });
 });
 
-describe('Tests for end-point at /shorten', () => {
-  const doAxiosPost = (endpoint, data) => {
-    return axios.post(
-      `${config.URL}/${endpoint}`,
-      { url: data },
-      { headers: { 'Content-Type': 'application/json' } }
-    );
-  };
-
+describe('Tests for end-point at /shorten for shortening links', () => {
   beforeEach(async () => {
     await sequelize.sync({ force: true, match: /-test$/ });
     await Link.create(youTubeLink);
   });
 
   test('POST /shorten will result in an error message for an invalid URL', async () => {
-    const response = await doAxiosPost('shorten', 'invalid_link');
+    const response = await doAxiosPost('shorten', { url: 'invalid_link' });
     expect(response.data).toEqual({ error: 'Invalid URL!' });
   });
 
   test('POST /shorten with https://www.google.com in request body will response with a valid short key', async () => {
-    const response = await doAxiosPost('shorten', 'https://www.google.com');
+    const response = await doAxiosPost('shorten', {
+      url: 'https://www.google.com',
+    });
     expect(typeof response.data.shortKey).toEqual('string');
     expect(response.data.shortKey).toHaveLength(7);
     expect(response.data.count).toBe(1);
   });
 
   test(`POST /shorten with ${URL} in request body will response with ${SHORT_KEY} and number of times link is created`, async () => {
-    const response = await doAxiosPost('shorten', URL);
+    const response = await doAxiosPost('shorten', { url: URL });
     expect(response.data.shortKey).toEqual(SHORT_KEY);
     expect(response.data.count).toBe(2);
   });
