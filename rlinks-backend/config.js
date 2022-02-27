@@ -30,6 +30,10 @@ if (process.env.NODE_ENV === 'DEV') {
   DB_NAME = process.env.DB_TEST_NAME;
 }
 
+const PAGINATION_LIMIT = ['DEV', 'TEST'].includes(process.env.NODE_ENV)
+  ? 5
+  : 10;
+
 module.exports = {
   URL,
   PORT,
@@ -39,4 +43,5 @@ module.exports = {
   DB_USERNAME,
   DB_PASSWORD,
   DB_NAME,
+  PAGINATION_LIMIT,
 };
