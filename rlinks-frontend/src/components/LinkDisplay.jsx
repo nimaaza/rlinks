@@ -3,7 +3,7 @@ import React from 'react';
 const BASE_URI = process.env.REACT_APP_BACKEND_URI;
 
 const LinkDisplay = ({ shortKey, count }) => {
-  const link = `${BASE_URI}${shortKey}`;
+  const link = `${BASE_URI}/${shortKey}`;
 
   return (
     <p>
