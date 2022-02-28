@@ -8,4 +8,22 @@ const fetchShortLinkFor = url => {
     .then(data => data);
 };
 
-export { fetchShortLinkFor };
+const fetchNextLinks = id => {
+  let query;
+
+  if (id) {
+    query = { id };
+  } else {
+    query = {};
+  }
+
+  return fetch('/links', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(query),
+  })
+    .then(response => response.json())
+    .then(data => data);
+};
+
+export { fetchShortLinkFor, fetchNextLinks };
