@@ -78,7 +78,10 @@ Link.transformer = async url => {
   return { url, shortKey, count };
 };
 
-const initDB = async () => await sequelize.sync();
+const initDB = async () => {
+  await sequelize.authenticate();
+  await sequelize.sync();
+};
 
 if (ENV !== 'TEST') {
   initDB();
