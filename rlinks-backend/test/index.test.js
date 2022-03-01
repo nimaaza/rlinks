@@ -61,6 +61,7 @@ describe('Basic tests for the database', () => {
     expect(createdLink.url).toEqual(youTubeLink.url);
     expect(createdLink.shortKey).toEqual(youTubeLink.shortKey);
     expect(createdLink.count).toBe(1);
+    expect(createdLink).toHaveProperty('visits');
     expect(createdLink).toHaveProperty('createdAt');
     expect(createdLink).toHaveProperty('updatedAt');
     expect(createdLink).toHaveProperty('id');
@@ -71,6 +72,7 @@ describe('Basic tests for the database', () => {
     expect(readLink.url).toEqual(youTubeLink.url);
     expect(readLink.shortKey).toEqual(youTubeLink.shortKey);
     expect(readLink.count).toBe(1);
+    expect(readLink.visits).toBe(0);
     expect(readLink).toHaveProperty('createdAt');
     expect(readLink).toHaveProperty('updatedAt');
     expect(readLink).toHaveProperty('id');
@@ -104,6 +106,8 @@ describe('Tests for postfix generator for shortened links', () => {
 });
 
 describe('Tests for proper redirection upon visiting a shortened link', () => {
+  const numberOfPastVisits = 3;
+
   beforeEach(async () => {
     await sequelize.sync({ force: true, match: /-test$/ });
     await Link.create(youTubeLink);
@@ -129,6 +133,18 @@ describe('Tests for proper redirection upon visiting a shortened link', () => {
         'This URL has not been shortened!'
       );
     }
+  });
+
+  test('Number of times a link is visited must be recorded correctly', async () => {
+    for (let i = 0; i < numberOfPastVisits; i++) {
+      await axios.get(`${config.URL}/${SHORT_KEY}`);
+    }
+
+    const link = await Link.findOne({
+      where: { shortKey: SHORT_KEY },
+    });
+
+    expect(link.visits).toBe(numberOfPastVisits);
   });
 });
 
@@ -178,12 +194,14 @@ describe('Tests for end-point at /shorten for shortening links', () => {
     expect(typeof response.data.shortKey).toEqual('string');
     expect(response.data.shortKey).toHaveLength(7);
     expect(response.data.count).toBe(1);
+    expect(response.data.visits).toBe(0);
   });
 
   test(`POST /shorten with ${URL} in request body will response with ${SHORT_KEY} and number of times link is created`, async () => {
     const response = await doAxiosPost('shorten', { url: URL });
     expect(response.data.shortKey).toEqual(SHORT_KEY);
     expect(response.data.count).toBe(2);
+    expect(response.data.visits).toBe(0);
   });
 });
 
@@ -233,6 +251,10 @@ describe('Tests for the end-point at /links for the pagination of produced short
     const firstResponse = await doAxiosPost('links', {});
 
     expect(firstResponse.data).toHaveProperty('links');
+    expect(firstResponse.data.links[0]).toHaveProperty('url');
+    expect(firstResponse.data.links[0]).toHaveProperty('shortKey');
+    expect(firstResponse.data.links[0]).toHaveProperty('count');
+    expect(firstResponse.data.links[0]).toHaveProperty('visits');
     expect(firstResponse.data.links).toHaveLength(limit);
   });
 

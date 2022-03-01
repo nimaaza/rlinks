@@ -31,6 +31,7 @@ app.get('/:key', async (request, response) => {
   const link = await Link.findOne({ where: { shortKey } });
 
   if (link) {
+    await link.increment({ visits: 1 });
     return response.redirect(link.url);
   } else {
     return response.status(400).json({

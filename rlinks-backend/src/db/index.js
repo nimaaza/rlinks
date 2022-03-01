@@ -34,6 +34,11 @@ const Link = sequelize.define(
       allowNull: false,
       defaultValue: 1,
     },
+    visits: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
@@ -60,22 +65,24 @@ const validUrl = url => {
 Link.transformer = async url => {
   if (!validUrl(url)) return;
 
-  let shortKey, count;
+  let shortKey, count, visits;
   const existingUrl = await Link.findOne({ where: { url } });
 
   if (existingUrl) {
     await existingUrl.increment({ count: 1 });
     shortKey = existingUrl.shortKey;
     count = existingUrl.count;
+    visits = existingUrl.visits;
   } else {
     shortKey = randomAlphaNumbericString(7);
     const link = { url, shortKey };
     const createdLink = await Link.create(link);
     shortKey = createdLink.shortKey;
     count = createdLink.count;
+    visits = createdLink.visits;
   }
 
-  return { url, shortKey, count };
+  return { url, shortKey, count, visits };
 };
 
 const initDB = async () => {
