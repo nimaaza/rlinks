@@ -75,11 +75,6 @@ describe('Basic tests for the database', () => {
     expect(readLink).toHaveProperty('updatedAt');
     expect(readLink).toHaveProperty('id');
 
-    await readLink.update({ shortKey: 'ABCDEFG' });
-    await readLink.increment({ count: 1 });
-    expect(readLink.shortKey).toEqual('ABCDEFG');
-    expect(readLink.count).toBe(2);
-
     await readLink.destroy();
     const allLinksInDb = await Link.findAll();
     expect(allLinksInDb).toHaveLength(0);
