@@ -1,26 +1,12 @@
-const fetchShortLinkFor = url => {
-  return fetch('/shorten', {
+const fetchShortLinkFor = url => doFetch('shorten', { url });
+
+const fetchNextLinks = id => doFetch('links', { id });
+
+const doFetch = (endpoint, data) => {
+  return fetch(`/${endpoint}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url }),
-  })
-    .then(response => response.json())
-    .then(data => data);
-};
-
-const fetchNextLinks = id => {
-  let query;
-
-  if (id) {
-    query = { id };
-  } else {
-    query = {};
-  }
-
-  return fetch('/links', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(query),
+    body: JSON.stringify(data),
   })
     .then(response => response.json())
     .then(data => data);
