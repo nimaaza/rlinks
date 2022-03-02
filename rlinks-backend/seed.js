@@ -1,4 +1,4 @@
-const { Link, sequelize } = require('./src/db');
+const { Link, sequelize, initDB } = require('./src/db');
 const config = require('./config');
 
 const sampleUrls = [
@@ -40,10 +40,18 @@ const sampleUrls = [
   'https://github.com/nimaaza/rlinks',
 ];
 
-const clear = async () => await Link.destroy({ truncate: true });
+const connect = async () => {
+  try {
+    await initDB();
+  } catch (error) {
+    console.error(error.message);
+  }
+};
+
+const close = async () => await sequelize.close();
 
 if (config.ENV === 'DEV') {
-  clear();
+  connect();
 
   sampleUrls.forEach(async url => {
     try {
@@ -53,3 +61,5 @@ if (config.ENV === 'DEV') {
     }
   });
 }
+
+setTimeout(close, 2000);
