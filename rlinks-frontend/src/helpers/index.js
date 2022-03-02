@@ -1,6 +1,6 @@
 const fetchShortLinkFor = url => doFetch('shorten', { url });
 
-const fetchNextLinks = id => doFetch('links', { id });
+const fetchNextPage = id => doFetch('links', { id });
 
 const doFetch = (endpoint, data) => {
   return fetch(`/${endpoint}`, {
@@ -12,4 +12,4 @@ const doFetch = (endpoint, data) => {
     .then(data => data);
 };
 
-export { fetchShortLinkFor, fetchNextLinks };
+export { fetchShortLinkFor, fetchNextPage };

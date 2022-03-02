@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchNextLinks } from '../helpers';
+import { fetchNextPage } from '../helpers';
 
 const BASE_URI = process.env.REACT_APP_BACKEND_URI;
 
@@ -12,7 +12,7 @@ const Links = () => {
     if (!hasNext) return;
 
     if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
-      const nextLinks = await fetchNextLinks(after);
+      const nextLinks = await fetchNextPage(after);
       const newLinks = links.concat(nextLinks.links);
 
       setLinks(newLinks);
@@ -22,7 +22,7 @@ const Links = () => {
   };
 
   useEffect(async () => {
-    const nextLinks = await fetchNextLinks();
+    const nextLinks = await fetchNextPage();
     setLinks(nextLinks.links);
     setHasNext(nextLinks.hasNext);
     setAfter(nextLinks.after);
