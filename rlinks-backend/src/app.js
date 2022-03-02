@@ -3,9 +3,11 @@ const path = require('path');
 const { Op } = require('sequelize');
 
 const config = require('../config');
-const { Link } = require('./db');
+const { Link, initDB } = require('./db');
 
 const app = express();
+
+initDB();
 
 app.use(express.static(path.join(__dirname, '/public')));
 app.use(express.json());
