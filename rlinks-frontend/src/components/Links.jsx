@@ -38,6 +38,7 @@ const Links = () => {
           </p>
         </div>
       ))}
+      {after && <button onClick={loadNextPage}>load more</button>}
     </div>
   );
 };
