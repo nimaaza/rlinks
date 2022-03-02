@@ -4,6 +4,7 @@
   "description": "Reduced Links: a link shortener (reducer) service.",
   "main": "index.js",
   "scripts": {
+    "db:clear": "NODE_ENV=DEV node clear.js",
     "db:seed": "NODE_ENV=DEV node seed.js",
     "dev": "NODE_ENV=DEV nodemon index.js",
     "test": "NODE_ENV=TEST jest ./test/index.test.js"
