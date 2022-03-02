@@ -2,7 +2,7 @@ const axios = require('axios');
 
 const config = require('../config');
 const server = require('../index');
-const { sequelize, Link } = require('../src/db');
+const { sequelize, Link, initDB } = require('../src/db');
 
 const SHORT_KEY = 'ABCDEFG';
 const URL = 'https://www.youtube.com/watch?v=LPLKOLJAbds';
@@ -15,7 +15,7 @@ const doAxiosPost = (endpoint, data) => {
 };
 
 beforeAll(async () => {
-  await sequelize.authenticate();
+  await initDB();
 });
 
 afterAll(async () => {
@@ -52,30 +52,31 @@ describe('Test basic backend behaviour', () => {
 });
 
 describe('Basic tests for the database', () => {
+  const checkReturnedLink = link => {
+    expect(link.url).toEqual(youTubeLink.url);
+    expect(link.shortKey).toEqual(youTubeLink.shortKey);
+    expect(link.count).toBe(1);
+    expect(link.visits).toBe(0);
+    expect(link).toHaveProperty('title');
+    expect(link).toHaveProperty('description');
+    expect(link).toHaveProperty('image');
+    expect(link).toHaveProperty('createdAt');
+    expect(link).toHaveProperty('updatedAt');
+    expect(link).toHaveProperty('id');
+  };
+
   beforeEach(async () => {
     await sequelize.sync({ force: true, match: /-test$/ });
   });
 
   test('Basic CRUD operations on the Link model work', async () => {
     const createdLink = await Link.create(youTubeLink);
-    expect(createdLink.url).toEqual(youTubeLink.url);
-    expect(createdLink.shortKey).toEqual(youTubeLink.shortKey);
-    expect(createdLink.count).toBe(1);
-    expect(createdLink).toHaveProperty('visits');
-    expect(createdLink).toHaveProperty('createdAt');
-    expect(createdLink).toHaveProperty('updatedAt');
-    expect(createdLink).toHaveProperty('id');
+    checkReturnedLink(createdLink);
 
     const readLink = await Link.findOne({
       where: { shortKey: youTubeLink.shortKey },
     });
-    expect(readLink.url).toEqual(youTubeLink.url);
-    expect(readLink.shortKey).toEqual(youTubeLink.shortKey);
-    expect(readLink.count).toBe(1);
-    expect(readLink.visits).toBe(0);
-    expect(readLink).toHaveProperty('createdAt');
-    expect(readLink).toHaveProperty('updatedAt');
-    expect(readLink).toHaveProperty('id');
+    checkReturnedLink(readLink);
 
     await readLink.destroy();
     const allLinksInDb = await Link.findAll();
@@ -184,6 +185,8 @@ describe('Tests for the transforming of links to short links', () => {
 });
 
 describe('Tests for end-point at /shorten for shortening links', () => {
+  const testUrl = 'https://www.youtube.com/';
+
   beforeEach(async () => {
     await sequelize.sync({ force: true, match: /-test$/ });
     await Link.create(youTubeLink);
@@ -194,9 +197,9 @@ describe('Tests for end-point at /shorten for shortening links', () => {
     expect(response.data).toEqual({ error: 'Invalid URL!' });
   });
 
-  test('POST /shorten with https://www.google.com in request body will response with a valid short key', async () => {
+  test(`POST /shorten with ${testUrl} will response with a valid short key`, async () => {
     const response = await doAxiosPost('shorten', {
-      url: 'https://www.google.com',
+      url: testUrl,
     });
     expect(typeof response.data.shortKey).toEqual('string');
     expect(response.data.shortKey).toHaveLength(7);
@@ -204,7 +207,7 @@ describe('Tests for end-point at /shorten for shortening links', () => {
     expect(response.data.visits).toBe(0);
   });
 
-  test(`POST /shorten with ${URL} in request body will response with ${SHORT_KEY} and number of times link is created`, async () => {
+  test(`POST /shorten with ${URL} will respond with ${SHORT_KEY} and the correct number of times its creation is requested`, async () => {
     const response = await doAxiosPost('shorten', { url: URL });
     expect(response.data.shortKey).toEqual(SHORT_KEY);
     expect(response.data.count).toBe(2);
@@ -213,7 +216,6 @@ describe('Tests for end-point at /shorten for shortening links', () => {
 });
 
 describe('Tests for the end-point at /links for the pagination of produced short links', () => {
-  const limit = config.PAGINATION_LIMIT;
   const sampleUrls = [
     'https://sequelize.org/v6/manual/model-querying-basics.html#limits-and-pagination',
     'https://sequelize.org/',
@@ -239,7 +241,7 @@ describe('Tests for the end-point at /links for the pagination of produced short
     'https://www.youtube.com/watch?v=2Oe6HUgrRlQ',
     'https://react-bootstrap.github.io/forms/select/',
   ];
-
+  const limit = config.PAGINATION_LIMIT;
   const paginationRequests = Math.floor(sampleUrls.length / limit);
 
   beforeEach(async () => {
@@ -258,21 +260,7 @@ describe('Tests for the end-point at /links for the pagination of produced short
     const firstResponse = await doAxiosPost('links', {});
 
     expect(firstResponse.data).toHaveProperty('links');
-    expect(firstResponse.data.links[0]).toHaveProperty('url');
-    expect(firstResponse.data.links[0]).toHaveProperty('shortKey');
-    expect(firstResponse.data.links[0]).toHaveProperty('count');
-    expect(firstResponse.data.links[0]).toHaveProperty('visits');
     expect(firstResponse.data.links).toHaveLength(limit);
-  });
-
-  test(`Should return an array of links of size ${limit} and a boolean with a large enough ID provided`, async () => {
-    const data = { id: sampleUrls.length + 10 };
-    const response = await doAxiosPost('links', data);
-
-    expect(response.data).toHaveProperty('links');
-    expect(response.data.links).toHaveLength(limit);
-    expect(response.data).toHaveProperty('hasNext');
-    expect(response.data).toHaveProperty('after');
   });
 
   test(`On the first ${paginationRequests} pagination requests, hasNext must return true, on the ${
