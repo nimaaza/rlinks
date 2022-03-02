@@ -149,9 +149,14 @@ describe('Tests for proper redirection upon visiting a shortened link', () => {
 });
 
 describe('Tests for the transforming of links to short links', () => {
+  const { getLinkPreviewData } = require('../src/helpers/previews');
+  const testUrl = 'https://www.youtube.com/';
+  let previewData;
+
   beforeEach(async () => {
     await sequelize.sync({ force: true, match: /-test$/ });
     await Link.create(youTubeLink);
+    previewData = await getLinkPreviewData(testUrl);
   });
 
   test('Should return falsy for an invalid URL', async () => {
@@ -167,12 +172,14 @@ describe('Tests for the transforming of links to short links', () => {
     expect(responseAfter.count).toEqual(responseBefore.count + 1);
   });
 
-  test('Should return a new key for a valid URL not existing in the database', async () => {
-    const response = await Link.transformer('https://www.google.com/');
-    const shortKey = response.shortKey;
+  test('Should return required meta data and a new key for a valid URL not existing in the database', async () => {
+    const response = await Link.transformer(testUrl);
 
-    expect(typeof shortKey).toEqual('string');
-    expect(shortKey).toHaveLength(7);
+    expect(typeof response.shortKey).toEqual('string');
+    expect(response.shortKey).toHaveLength(7);
+    expect(response.title).toEqual(previewData.title);
+    expect(response.description).toEqual(previewData.description);
+    expect(response.image).toEqual(previewData.image);
   });
 });
 

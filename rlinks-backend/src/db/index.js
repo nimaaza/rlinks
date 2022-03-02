@@ -8,6 +8,7 @@ const {
   DB_LOGGER,
 } = require('../../config');
 const { validUrl } = require('../helpers/url');
+const { getLinkPreviewData } = require('../helpers/previews');
 const { randomAlphaNumbericString } = require('../helpers/randomize');
 
 const sequelize = new Sequelize(DB_NAME, DB_USERNAME, DB_PASSWORD, {
@@ -28,6 +29,18 @@ const Link = sequelize.define(
       type: DataTypes.STRING(7),
       allowNull: false,
       unique: 'urlShortKeyCompositeIndex',
+    },
+    title: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    image: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
     count: {
       type: DataTypes.INTEGER,
