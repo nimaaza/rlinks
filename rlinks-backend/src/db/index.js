@@ -61,9 +61,16 @@ const Link = sequelize.define(
   {
     timestamps: true,
     indexes: [
+      { unique: true, fields: ['url'] },
       {
-        unique: true,
-        fields: ['url'],
+        name: 'id_index',
+        fields: [
+          'id',
+          {
+            name: 'id',
+            order: 'DESC',
+          },
+        ],
       },
     ],
   }
