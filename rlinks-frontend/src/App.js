@@ -12,6 +12,8 @@ const App = () => {
   const onSubmit = async e => {
     e.preventDefault();
 
+    if (!url.trim().length > 0) return;
+
     const data = await fetchShortLinkFor(url);
     setDisplay(data);
   };
