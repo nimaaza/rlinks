@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import './App.css';
 import LinkDisplay from './components/LinkDisplay';
+import { Container } from './components/styled/Container';
 import Links from './components/Links';
 import { fetchShortLinkFor } from './helpers';
 
@@ -19,7 +20,7 @@ const App = () => {
   };
 
   return (
-    <React.Fragment>
+    <Container>
       <form onSubmit={onSubmit}>
         <label htmlFor="url">URL: </label>
         <input
@@ -32,7 +33,7 @@ const App = () => {
       </form>
       {display && <LinkDisplay {...display} />}
       <Links />
-    </React.Fragment>
+    </Container>
   );
 };
 

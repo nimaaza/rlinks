@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { fetchNextPage } from '../helpers';
 
-const BASE_URI = process.env.REACT_APP_BACKEND_URI;
+import { fetchNextPage } from '../helpers';
+import LinkDisplay from './LinkDisplay';
+import Button from './styled/Button';
 
 const Links = () => {
   const [links, setLinks] = useState([]);
@@ -29,16 +30,11 @@ const Links = () => {
   }, []);
 
   return (
-    <div onWheel={loadNextPage}>
-      {links.map(link => (
-        <div key={link.id}>
-          <p>
-            <a href={`${BASE_URI}/${link.shortKey}`}>{`${BASE_URI}/${link.shortKey}`}</a>
-            created {link.count} times
-          </p>
-        </div>
-      ))}
-      {after && <button onClick={loadNextPage}>load more</button>}
+    <div onWheel={loadNextPage} onScroll={loadNextPage}>
+      { links.map(link => <LinkDisplay key={link.id} {...link} />)}
+      {after
+        ? <Button onClick={loadNextPage}>load more</Button>
+        :<p>no more links to load</p>}
     </div>
   );
 };
