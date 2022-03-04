@@ -2,7 +2,7 @@ require('dotenv').config();
 
 let URL, PORT;
 
-if (process.env.NODE_ENV === 'DEV') {
+if (process.env.NODE_ENV === 'DEV' || process.env.NODE_ENV === 'PROD') {
   PORT = process.env.PORT;
 } else if (process.env.NODE_ENV === 'TEST') {
   PORT = process.env.TEST_PORT;
@@ -28,6 +28,12 @@ if (process.env.NODE_ENV === 'DEV') {
   DB_USERNAME = process.env.DB_TEST_USERNAME;
   DB_PASSWORD = process.env.DB_TEST_PASSWORD;
   DB_NAME = process.env.DB_TEST_NAME;
+} else if (process.env.NODE_ENV === 'PROD') {
+  DB_HOST = process.env.DB_PROD_HOST;
+  DB_LOGGER = process.env.DB_PROD_DB_LOGGER;
+  DB_USERNAME = process.env.DB_PROD_USERNAME;
+  DB_PASSWORD = process.env.DB_PROD_PASSWORD;
+  DB_NAME = process.env.DB_PROD_NAME;
 }
 
 const PAGINATION_LIMIT = ['DEV', 'TEST'].includes(process.env.NODE_ENV)
