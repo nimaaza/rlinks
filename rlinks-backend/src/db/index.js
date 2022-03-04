@@ -1,6 +1,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
 
 const {
+  ENV,
   DB_HOST,
   DB_NAME,
   DB_USERNAME,
@@ -15,6 +16,12 @@ const sequelize = new Sequelize(DB_NAME, DB_USERNAME, DB_PASSWORD, {
   host: DB_HOST,
   dialect: 'postgres',
   logging: DB_LOGGER,
+  dialectOptions: {
+    ssl: {
+      require: ENV === 'PROD',
+      rejectUnauthorized: false,
+    },
+  },
 });
 
 const Link = sequelize.define(
