@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import Button from 'react-bootstrap/Button';
 
 import { fetchNextPage } from '../helpers';
 import LinkDisplay from './LinkDisplay';
-import Button from './styled/Button';
 
 const Links = () => {
   const [links, setLinks] = useState([]);
@@ -22,6 +22,20 @@ const Links = () => {
     }
   };
 
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  const footerOption = () => {
+    if (after) {
+      return <Button onClick={loadNextPage}>load more</Button>;
+    } else {
+      return (
+        <p>
+          No more links to load, <a href='' onClick={scrollToTop}>create one?</a>
+        </p>
+      );
+    }
+  };
+
   useEffect(async () => {
     const nextLinks = await fetchNextPage();
     setLinks(nextLinks.links);
@@ -31,10 +45,10 @@ const Links = () => {
 
   return (
     <div onWheel={loadNextPage} onScroll={loadNextPage}>
-      { links.map(link => <LinkDisplay key={link.id} {...link} />)}
-      {after
-        ? <Button onClick={loadNextPage}>load more</Button>
-        :<p>no more links to load</p>}
+      {links.map(link => {
+        return <LinkDisplay key={link.id} {...link} />;
+      })}
+      <div className="d-flex m-5 justify-content-center">{footerOption()}</div>
     </div>
   );
 };

@@ -1,8 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import Button from './styled/Button';
-import { Column, Row } from './styled/Container';
+import Button from 'react-bootstrap/Button';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import CircleImage from './styled/CircleImage';
 
 const BASE_URI = process.env.REACT_APP_BACKEND_URI;
@@ -11,49 +12,9 @@ const copyToClipboard = async text => {
   await navigator.clipboard.writeText(text);
 };
 
-const VerticalLine = styled.div`
-  border: 1px solid #0000003d;
-  margin: 0px 16px;
-`;
-
-const CustomRow = styled(Row)`
-  justify-content: space-around;
-`;
-
-const CustomColumn = styled(Column)`
-  justify-content: space-between;
-  width: 100%;
-`;
-
-const CenteredRow = styled(Row)`
-  align-items: center;
-  justify-content: center;
-`;
-
-const CenteredColumn = styled(Column)`
-  align-items: center;
-  width: 100%;
-`;
-
-const Card = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  border: 1px solid #0000003d;
-  border-radius: 16px;
-  padding: 16px;
-  margin: 32px auto;
+const RowWithBorder = styled(Row)`
   box-shadow: 0px 0px 4px #0000003d;
-
-  p,
-  h1,
-  h2 {
-    margin: 0px;
-  }
-
-  a {
-    text-decoration: none;
-  }
+  border-radius: 16px;
 `;
 
 const LinkDisplay = ({
@@ -67,34 +28,36 @@ const LinkDisplay = ({
   const link = `${BASE_URI}/${shortKey}`;
 
   return (
-    <Card>
-      <div>
+    <RowWithBorder className="m-5 p-4">
+      <Col lg={3} className="d-flex align-items-center justify-content-center">
         <CircleImage src={image} alt="" />
-      </div>
-      <VerticalLine />
-      <CustomColumn>
-        <a href={link}>
-          <h2>{title}</h2>
-        </a>
-        <p>{description ? description : 'No description.'}</p>
-        <CustomRow>
-          <CenteredColumn>
-            <h2>{count}</h2>
-            <p>creation</p>
-          </CenteredColumn>
-          <CenteredColumn>
-            <h2>{visits}</h2>
+      </Col>
+      <Col lg={9}>
+        <Row>
+          <a href={link}>
+            <h2 className="text-truncate">{title}</h2>
+          </a>
+        </Row>
+        <Row>
+          <p>{description}</p>
+        </Row>
+        <Row>
+          <Col className="d-flex flex-column align-items-center">
+            <strong>{count}</strong>
+            <p>creations</p>
+          </Col>
+          <Col className="d-flex flex-column align-items-center">
+            <strong>{visits}</strong>
             <p>visits</p>
-          </CenteredColumn>
-        </CustomRow>
-        <CenteredRow>
-          {/* <a href={link}>{link}</a> */}
+          </Col>
+        </Row>
+        <Row>
           <Button onClick={() => copyToClipboard(link)}>
             {link} (click to copy)
           </Button>
-        </CenteredRow>
-      </CustomColumn>
-    </Card>
+        </Row>
+      </Col>
+    </RowWithBorder>
   );
 };
 
