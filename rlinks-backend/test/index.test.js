@@ -18,9 +18,8 @@ const clearDB = async () => {
   await Link.destroy({
     where: {},
     truncate: true,
-});
+  });
 };
-
 
 afterAll(async () => {
   await sequelize.close();
@@ -70,10 +69,6 @@ describe('Basic tests for the database', () => {
     expect(link).toHaveProperty('updatedAt');
     expect(link).toHaveProperty('id');
   };
-
-  beforeEach(async () => {
-    await sequelize.sync({ force: true, match: /-test$/ });
-  });
 
   test('Basic CRUD operations on the Link model work', async () => {
     const createdLink = await Link.create(youTubeLink);
@@ -305,7 +300,7 @@ describe('Tests for the end-point at /links for the pagination of produced short
 
   test('Initial request to the end-point with cursor = 0 should return the first page of links sorted newest to oldest', async () => {
     await doInitialPaginationFor(config.PAGINATION_MODE.CREATED_AT);
-    });
+  });
 
   test('Initial request to the end-point with cursor = 0 should return the first page of links sorted according to most creation attempts', async () => {
     await doInitialPaginationFor(config.PAGINATION_MODE.COUNT);
