@@ -1,6 +1,6 @@
 const fetchShortLinkFor = url => doFetch('shorten', { url });
 
-const fetchNextPage = id => doFetch('links', { id });
+const fetchNextPage = (mode, cursor) => doFetch('links', { mode, cursor });
 
 const doFetch = (endpoint, data) => {
   return fetch(`/${endpoint}`, {
