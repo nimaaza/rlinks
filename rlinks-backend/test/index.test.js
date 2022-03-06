@@ -2,7 +2,7 @@ const axios = require('axios');
 
 const config = require('../config');
 const server = require('../index');
-const { sequelize, Link, initDB } = require('../src/db');
+const { Link, sequelize } = require('../src/db');
 
 const SHORT_KEY = 'ABCDEFG';
 const URL = 'https://www.youtube.com/watch?v=LPLKOLJAbds';
@@ -14,9 +14,13 @@ const doAxiosPost = (endpoint, data) => {
   });
 };
 
-beforeAll(async () => {
-  await initDB();
+const clearDB = async () => {
+  await Link.destroy({
+    where: {},
+    truncate: true,
 });
+};
+
 
 afterAll(async () => {
   await sequelize.close();
@@ -34,9 +38,7 @@ describe('Test basic backend behaviour', () => {
 
     expect(response.status).toBe(200);
     expect(response.headers['content-type']).toContain('text/html');
-    expect(response.data).toContain(
-      '<title>RLinks - link reducer service</title>'
-    );
+    expect(response.data).toContain('<title>RLinks - link reducer service</title>');
   });
 
   test('POST / will receive the URL included in the request body', async () => {
@@ -52,6 +54,10 @@ describe('Test basic backend behaviour', () => {
 });
 
 describe('Basic tests for the database', () => {
+  beforeEach(async () => {
+    await clearDB();
+  });
+
   const checkReturnedLink = link => {
     expect(link.url).toEqual(youTubeLink.url);
     expect(link.shortKey).toEqual(youTubeLink.shortKey);
@@ -110,7 +116,7 @@ describe('Tests for proper redirection upon visiting a shortened link', () => {
   const numberOfPastVisits = 3;
 
   beforeEach(async () => {
-    await sequelize.sync({ force: true, match: /-test$/ });
+    await clearDB();
     await Link.create(youTubeLink);
   });
 
@@ -130,9 +136,7 @@ describe('Tests for proper redirection upon visiting a shortened link', () => {
     } catch (error) {
       expect(error.response.status).toBe(400);
       expect(error.response.data).toHaveProperty('error');
-      expect(error.response.data.error).toContain(
-        'This URL has not been shortened!'
-      );
+      expect(error.response.data.error).toContain('This URL has not been shortened!');
     }
   });
 
@@ -155,7 +159,7 @@ describe('Tests for the transforming of links to short links', () => {
   let previewData;
 
   beforeEach(async () => {
-    await sequelize.sync({ force: true, match: /-test$/ });
+    await clearDB();
     await Link.create(youTubeLink);
     previewData = await getLinkPreviewData(testUrl);
   });
@@ -188,7 +192,7 @@ describe('Tests for end-point at /shorten for shortening links', () => {
   const testUrl = 'https://www.youtube.com/';
 
   beforeEach(async () => {
-    await sequelize.sync({ force: true, match: /-test$/ });
+    await clearDB();
     await Link.create(youTubeLink);
   });
 
