@@ -245,39 +245,99 @@ describe('Tests for the end-point at /links for the pagination of produced short
   const paginationRequests = Math.floor(sampleUrls.length / limit);
 
   beforeEach(async () => {
-    const { randomAlphaNumbericString } = require('../src/helpers/randomize');
-
-    await sequelize.sync({ force: true, match: /-test$/ });
+    await clearDB();
 
     sampleUrls.forEach(async url => {
-      const shortKey = randomAlphaNumbericString(7);
-      const data = { url, shortKey };
-      await Link.create(data);
+      await Link.transformer(url);
     });
   });
 
-  test('The request to the end-point with no ID should return the first page of links', async () => {
-    const firstResponse = await doAxiosPost('links', {});
+  const testPaginationOrder = (page, mode) => {
+    for (let i = 1; i < page.length; i++) {
+      expect(page[i][mode]).toBeLessThanOrEqual(page[i - 1][mode]);
+    }
+  };
 
-    expect(firstResponse.data).toHaveProperty('links');
-    expect(firstResponse.data.links).toHaveLength(limit);
-  });
+  const doInitialPaginationFor = async mode => {
+    const response = await doAxiosPost('links', { mode, cursor: 0 });
 
-  test(`On the first ${paginationRequests} pagination requests, hasNext must return true, on the ${
-    paginationRequests + 1
-  }th request must return false`, async () => {
-    const firstPaginationRequest = await doAxiosPost('links', {});
-    expect(firstPaginationRequest.data.hasNext).toBe(true);
-    let id = firstPaginationRequest.data.after;
+    expect(response.data).toHaveProperty('links');
+    expect(response.data).toHaveProperty('hasNext');
+    expect(response.data).toHaveProperty('cursor');
+    expect(response.data.links).toHaveLength(limit);
+    expect(response.data.cursor).toBe(1);
+    testPaginationOrder(response.data.links, mode);
+  };
 
-    for (let i = 1; i < paginationRequests; i++) {
-      const nextPaginationRequest = await doAxiosPost('links', { id });
-      expect(nextPaginationRequest.data.hasNext).toBe(true);
-      id = nextPaginationRequest.data.after;
+  const doPaginationTestFor = async mode => {
+    let cursor = 0;
+
+    for (let i = 0; i < paginationRequests; i++) {
+      const nextPage = await doAxiosPost('links', { mode, cursor });
+      expect(nextPage.data.links).toHaveLength(limit);
+      expect(nextPage.data.hasNext).toBe(true);
+      expect(nextPage.data.cursor).toBe(cursor + 1);
+      testPaginationOrder(nextPage.data.links, mode);
+      cursor = nextPage.data.cursor;
     }
 
-    const lastPaginationRequest = await doAxiosPost('links', { id });
-    expect(lastPaginationRequest.data.hasNext).toBe(false);
-    expect(lastPaginationRequest.data.links.length).toBeLessThan(limit);
+    const lastPage = await doAxiosPost('links', { mode, cursor });
+    expect(lastPage.data.links).toHaveLength(sampleUrls.length - paginationRequests * limit);
+    expect(lastPage.data.hasNext).toBe(false);
+    testPaginationOrder(lastPage.data.links, mode);
+  };
+
+  test('Query generator creates the correct query objects', () => {
+    const { createPaginationQuery } = require('../src/helpers/pagination');
+    const curosr = 3;
+
+    const query = createPaginationQuery(config.PAGINATION_MODE.CREATED_AT, curosr);
+    expect(query).toEqual({
+      order: [['id', 'DESC']],
+      offset: curosr * config.PAGINATION_LIMIT,
+      limit: config.PAGINATION_LIMIT,
+    });
+  });
+
+  test('Initial request to the end-point with cursor = 0 should return the first page of links sorted newest to oldest', async () => {
+    await doInitialPaginationFor(config.PAGINATION_MODE.CREATED_AT);
+    });
+
+  test('Initial request to the end-point with cursor = 0 should return the first page of links sorted according to most creation attempts', async () => {
+    await doInitialPaginationFor(config.PAGINATION_MODE.COUNT);
+  });
+
+  test('Initial request to the end-point with cursor = 0 should return the first page of links sorted according to most visits', async () => {
+    await doInitialPaginationFor(config.PAGINATION_MODE.VISITS);
+  });
+
+  test(`On the first ${paginationRequests} pagination requests (sorted according to ID number), hasNext must return true, on the ${
+    paginationRequests + 1
+  }th request must return false with the remaining number of last page links`, async () => {
+    await doPaginationTestFor(config.PAGINATION_MODE.CREATED_AT);
+  });
+
+  test(`On the first ${paginationRequests} pagination requests (sorted according to creation attempts), hasNext must return true, on the ${
+    paginationRequests + 1
+  }th request must return false with the remaining number of last page links`, async () => {
+    let links = await Link.findAll();
+    links.forEach(async link => {
+      link.count = Math.ceil(Math.random() * 100);
+      await link.save();
+    });
+
+    await doPaginationTestFor(config.PAGINATION_MODE.COUNT);
+  });
+
+  test(`On the first ${paginationRequests} pagination requests (sorted according to visits), hasNext must return true, on the ${
+    paginationRequests + 1
+  }th request must return false with the remaining number of last page links`, async () => {
+    let links = await Link.findAll();
+    links.forEach(async link => {
+      link.visits = Math.ceil(Math.random() * 100);
+      await link.save();
+    });
+
+    await doPaginationTestFor(config.PAGINATION_MODE.VISITS);
   });
 });

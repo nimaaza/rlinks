@@ -1,13 +1,11 @@
 const express = require('express');
 const path = require('path');
-const { Op } = require('sequelize');
 
 const config = require('../config');
-const { Link, initDB } = require('./db');
+const { Link } = require('./db');
+const { createPaginationQuery } = require('./helpers/pagination');
 
 const app = express();
-
-initDB();
 
 app.use(express.static(path.join(__dirname, '/public')));
 app.use(express.json());
@@ -54,28 +52,15 @@ app.post('/shorten', async (request, response) => {
 });
 
 app.post('/links', async (request, response) => {
-  const id = Number(request.body.id);
-  let links, query;
+  let { mode, cursor } = request.body;
+  cursor = Number(cursor);
+  const query = createPaginationQuery(mode, cursor);
 
-  if (!id) {
-    query = {
-      order: [['id', 'DESC']],
-      limit: config.PAGINATION_LIMIT,
-    };
-  } else {
-    query = {
-      order: [['id', 'DESC']],
-      where: { id: { [Op.lt]: id } },
-      limit: config.PAGINATION_LIMIT,
-    };
-  }
-
-  links = await Link.findAll(query);
+  let links = await Link.findAll(query);
   links = links.map(link => link.dataValues);
-  const hasNext = links.length === config.PAGINATION_LIMIT;
-  const after = links[config.PAGINATION_LIMIT - 1]?.id;
 
-  response.json({ links, hasNext, after });
+  const hasNext = links.length === config.PAGINATION_LIMIT;
+  response.json({ links, hasNext, cursor: cursor + 1 });
 });
 
 module.exports = app;

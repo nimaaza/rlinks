@@ -38,6 +38,11 @@ if (ENV === 'DEV') {
 }
 
 const PAGINATION_LIMIT = ['DEV', 'TEST'].includes(ENV) ? 5 : 10;
+const PAGINATION_MODE = {
+  CREATED_AT: 'id',
+  COUNT: 'count',
+  VISITS: 'visits',
+};
 
 module.exports = {
   URL,
@@ -49,4 +54,5 @@ module.exports = {
   DB_PASSWORD,
   DB_NAME,
   PAGINATION_LIMIT,
+  PAGINATION_MODE,
 };
