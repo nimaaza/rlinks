@@ -16,6 +16,7 @@ const UrlForm = () => {
 
     const response = await fetchShortLinkFor(url);
     setLink(response);
+    setUrl('');
   };
 
   const displayNewLink = () => {
@@ -34,7 +35,7 @@ const UrlForm = () => {
       <Form className="m-5" onSubmit={onSubmit}>
         <Form.Group className="mb-3">
           <Form.Label>URL:</Form.Label>
-          <Form.Control required type="text" placeholder="URL" onChange={e => setUrl(e.target.value)} />
+          <Form.Control required type="text" placeholder="URL" value={url} onChange={e => setUrl(e.target.value)} />
           <Form.Text className="text-muted">Enter a valid URL to shorten.</Form.Text>
         </Form.Group>
         <Button type="submit">Shorten!</Button>
