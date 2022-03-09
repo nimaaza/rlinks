@@ -1,5 +1,5 @@
 /* eslint-disable indent */
-const { PAGINATION_MODE, PAGINATION_LIMIT } = require('../../config');
+const { PAGINATION_MODE, PAGINATION_LIMIT } = require('../config');
 
 const queryFor = (parameter, cursor) => {
   return {

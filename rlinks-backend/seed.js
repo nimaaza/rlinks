@@ -1,5 +1,5 @@
 const { Link, sequelize, initDB } = require('./src/db');
-const config = require('./config');
+const config = require('./src/config');
 
 const sampleUrls = [
   'https://sequelize.org/v6/manual/model-querying-basics.html#limits-and-pagination',

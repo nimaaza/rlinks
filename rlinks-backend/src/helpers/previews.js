@@ -1,5 +1,5 @@
 const { getLinkPreview } = require('link-preview-js');
-const { ENV } = require('../../config');
+const { ENV } = require('../config');
 
 let getLinkPreviewData;
 

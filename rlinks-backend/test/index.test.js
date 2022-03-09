@@ -1,7 +1,7 @@
 const axios = require('axios');
 
-const config = require('../config');
-const server = require('../index');
+const config = require('../src/config');
+const server = require('../src/index');
 const { Link, sequelize } = require('../src/db');
 
 const SHORT_KEY = 'ABCDEFG';

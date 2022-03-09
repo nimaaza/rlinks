@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 
-const { ENV, DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD, DB_LOGGER } = require('../../config');
+const { ENV, DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD, DB_LOGGER } = require('../config');
 const { validUrl } = require('../helpers/url');
 const { getLinkPreviewData } = require('../helpers/previews');
 const { randomAlphaNumbericString } = require('../helpers/randomize');

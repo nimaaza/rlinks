@@ -1,5 +1,5 @@
 const { sequelize, initDB } = require('./src/db');
-const config = require('./config');
+const config = require('./src/config');
 
 const clear = async () => {
   try {
