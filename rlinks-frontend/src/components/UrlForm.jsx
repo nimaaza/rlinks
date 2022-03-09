@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 
-import { fetchShortLinkFor } from '../helpers';
+import { fetchShortLinkFor, validUrl } from '../helpers';
 import LinkDisplay from './LinkDisplay';
 
 const UrlForm = () => {
@@ -12,7 +12,10 @@ const UrlForm = () => {
   const onSubmit = async e => {
     e.preventDefault();
 
-    if (!url.trim().length > 0) return;
+    if (!url.trim().length > 0 || !validUrl(url)) {
+      setUrl('');
+      return;
+    }
 
     const response = await fetchShortLinkFor(url);
     setLink(response);
@@ -37,6 +40,9 @@ const UrlForm = () => {
           <Form.Label>URL:</Form.Label>
           <Form.Control required type="text" placeholder="URL" value={url} onChange={e => setUrl(e.target.value)} />
           <Form.Text className="text-muted">Enter a valid URL to shorten.</Form.Text>
+          {!validUrl(url) && url.trim().length > 0 && (
+            <p className="text-danger">Your URL does not seem to work. Maybe you have a typo?</p>
+          )}
         </Form.Group>
         <Button type="submit">Shorten!</Button>
       </Form>
