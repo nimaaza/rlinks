@@ -125,14 +125,9 @@ describe('Tests for proper redirection upon visiting a shortened link', () => {
     expect(response.request._redirectable._currentUrl).toEqual(URL);
   });
 
-  test(`GET /${SHORT_KEY.toLowerCase()} receives a 400 status code with appropriate error message`, async () => {
-    try {
-      await axios.get(`${config.URL}/${SHORT_KEY.toLowerCase()}`);
-    } catch (error) {
-      expect(error.response.status).toBe(400);
-      expect(error.response.data).toHaveProperty('error');
-      expect(error.response.data.error).toContain('This URL has not been shortened!');
-    }
+  test(`GET /${SHORT_KEY.toLowerCase()} must be redirected to the error page with a link to the app`, async () => {
+    const response = await axios.get(`${config.URL}/${SHORT_KEY.toLowerCase()}`);
+    expect(response.data).toContain('<a href="/">');
   });
 
   test('Number of times a link is visited must be recorded correctly', async () => {

@@ -23,7 +23,7 @@ if (['DEV', 'TEST'].includes(config.ENV)) {
 }
 
 app.get('/', (request, response) => {
-  response.sendFile('/index.html');
+  response.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.get('/:key', async (request, response) => {
@@ -34,9 +34,7 @@ app.get('/:key', async (request, response) => {
     await link.increment({ visits: 1 });
     return response.redirect(link.url);
   } else {
-    return response.status(400).json({
-      error: 'This URL has not been shortened!',
-    });
+    return response.sendFile(path.join(__dirname, 'public', 'error.html'));
   }
 });
 
