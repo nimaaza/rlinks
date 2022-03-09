@@ -46,12 +46,16 @@ const Links = () => {
     <React.Fragment>
       <hr className="m-5" />
       <div className="d-flex justify-content-between m-5">
-        <h1 className="text-muted">What others have been interested in:</h1>
-        <select onChange={displayModeChange}>
-          <option value={'id'}>Date of creation</option>
-          <option value={'count'}>Most interest in</option>
-          <option value={'visits'}>Most visits</option>
-        </select>
+        <div>
+          <p className="text-muted fw-bold">What others have been interested in:</p>
+        </div>
+        <div>
+          <select onChange={displayModeChange}>
+            <option value={'id'}>Date of creation</option>
+            <option value={'count'}>Most interest in</option>
+            <option value={'visits'}>Most visits</option>
+          </select>
+        </div>
       </div>
       <div onWheel={loadNextPage} onScroll={loadNextPage}>
         {links.map(link => (

@@ -22,7 +22,7 @@ const UrlForm = () => {
     if (link) {
       return (
         <React.Fragment>
-          <h1 className="text-muted m-5">Here's your newly created link:</h1>
+          <p className="text-muted fw-bold m-5">Here's your newly created link:</p>
           <LinkDisplay {...link} />
         </React.Fragment>
       );
