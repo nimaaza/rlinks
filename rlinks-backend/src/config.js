@@ -17,7 +17,8 @@ if (['DEV', 'TEST'].includes(ENV)) {
 
 let DB_HOST, DB_LOGGER, DB_USERNAME, DB_PASSWORD, DB_NAME;
 
-if (ENV === 'DEV') {
+if (ENV === 'DEV' || ENV === 'SEED') {
+  // when seeding, the development database is used
   DB_HOST = process.env.DB_DEV_HOST;
   DB_LOGGER = process.env.DB_DEV_DB_LOGGER;
   DB_USERNAME = process.env.DB_DEV_USERNAME;

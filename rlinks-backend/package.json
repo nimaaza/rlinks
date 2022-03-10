@@ -7,8 +7,8 @@
     "dev": "NODE_ENV=DEV nodemon ./src/index.js",
     "test": "NODE_ENV=TEST jest ./test/index.test.js",
     "start": "NODE_ENV=PROD node ./src/index.js",
-    "db:clear": "NODE_ENV=DEV node clear.js",
-    "db:seed": "NODE_ENV=DEV node seed.js"
+    "db:clear": "NODE_ENV=SEED node clear.js",
+    "db:seed": "NODE_ENV=SEED node seed.js"
   },
   "keywords": [
     "link",
