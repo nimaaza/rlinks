@@ -39,6 +39,7 @@ if (ENV === 'DEV' || ENV === 'SEED') {
 }
 
 const PAGINATION_LIMIT = ['DEV', 'TEST'].includes(ENV) ? 5 : 10;
+const SHORT_KEY_LENGTH = 7;
 const PAGINATION_MODE = {
   CREATED_AT: 'id',
   COUNT: 'count',
@@ -54,6 +55,7 @@ module.exports = {
   DB_USERNAME,
   DB_PASSWORD,
   DB_NAME,
+  SHORT_KEY_LENGTH,
   PAGINATION_LIMIT,
   PAGINATION_MODE,
 };

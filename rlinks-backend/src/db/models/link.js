@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 
+const { SHORT_KEY_LENGTH } = require('../../config');
 const { getLinkPreviewData } = require('../../helpers/previews');
 const { randomAlphaNumbericString } = require('../../helpers/randomize');
 const { validUrl } = require('../../helpers/url');
@@ -14,7 +15,7 @@ const addLinkModel = sequelize => {
         unique: 'urlShortKeyCompositeIndex',
       },
       shortKey: {
-        type: DataTypes.STRING(7),
+        type: DataTypes.STRING(SHORT_KEY_LENGTH),
         allowNull: false,
         unique: 'urlShortKeyCompositeIndex',
       },

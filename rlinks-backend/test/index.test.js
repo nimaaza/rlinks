@@ -87,7 +87,7 @@ describe('Basic tests for the database', () => {
 
 describe('Tests for postfix generator for shortened links', () => {
   const { randomAlphaNumbericString } = require('../src/helpers/randomize');
-  const randomStringLength = 7;
+  const randomStringLength = config.SHORT_KEY_LENGTH;
   const numberOfStringsToCompare = 10000;
 
   test(`Expect return value to be a string of length ${randomStringLength}`, () => {
@@ -171,7 +171,7 @@ describe('Tests for the transforming of links to short links', () => {
     const response = await Link.transformer(testUrl);
 
     expect(typeof response.shortKey).toEqual('string');
-    expect(response.shortKey).toHaveLength(7);
+    expect(response.shortKey).toHaveLength(config.SHORT_KEY_LENGTH);
     expect(response.title).toEqual(previewData.title);
     expect(response.description).toEqual(previewData.description);
     expect(response.image).toEqual(previewData.image);
