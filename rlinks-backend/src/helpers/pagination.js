@@ -1,5 +1,6 @@
 /* eslint-disable indent */
 const { PAGINATION_MODE, PAGINATION_LIMIT } = require('../config');
+const { CREATED_AT, COUNT, VISITS } = PAGINATION_MODE;
 
 const queryFor = (parameter, cursor) => {
   return {
@@ -11,12 +12,12 @@ const queryFor = (parameter, cursor) => {
 
 const createPaginationQuery = (mode, cursor) => {
   switch (mode) {
-    case PAGINATION_MODE.CREATED_AT:
-      return queryFor('id', cursor);
-    case PAGINATION_MODE.COUNT:
-      return queryFor('count', cursor);
-    case PAGINATION_MODE.VISITS:
-      return queryFor('visits', cursor);
+    case CREATED_AT:
+      return queryFor(CREATED_AT, cursor);
+    case COUNT:
+      return queryFor(COUNT, cursor);
+    case VISITS:
+      return queryFor(VISITS, cursor);
   }
 };
 
