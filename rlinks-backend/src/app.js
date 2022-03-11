@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 
-const config = require('./config');
+const { ENV, PAGINATION_LIMIT } = require('./config');
 const { Link } = require('./db');
 const { createPaginationQuery } = require('./helpers/pagination');
 
@@ -10,7 +10,7 @@ const app = express();
 app.use(express.static(path.join(__dirname, '/public')));
 app.use(express.json());
 
-if (['DEV', 'TEST'].includes(config.ENV)) {
+if (['DEV', 'TEST'].includes(ENV)) {
   app.get('/live', (request, response) => {
     response.status(200).send('rlinks is live!');
   });
@@ -57,7 +57,7 @@ app.post('/links', async (request, response) => {
   let links = await Link.findAll(query);
   links = links.map(link => link.dataValues);
 
-  const hasNext = links.length === config.PAGINATION_LIMIT;
+  const hasNext = links.length === PAGINATION_LIMIT;
   response.json({ links, hasNext, cursor: cursor + 1 });
 });
 
