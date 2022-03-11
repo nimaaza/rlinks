@@ -145,6 +145,7 @@ describe('Tests for proper redirection upon visiting a shortened link', () => {
 
 describe('Tests for the transforming of links to short links', () => {
   const { getLinkPreviewData } = require('../src/helpers/previews');
+  const { validUrl } = require('../src/helpers/url');
   const testUrl = 'https://www.youtube.com/';
   let previewData;
 
@@ -152,6 +153,11 @@ describe('Tests for the transforming of links to short links', () => {
     await clearDB();
     await Link.create(youTubeLink);
     previewData = await getLinkPreviewData(testUrl);
+  });
+
+  test('URL validator must return true for valid URLs, otherwise false', () => {
+    expect(validUrl(testUrl)).toBe(true);
+    expect(validUrl('invalid_url')).toBe(false);
   });
 
   test('Should return falsy for an invalid URL', async () => {
