@@ -202,7 +202,7 @@ describe('Tests for end-point at /shorten for shortening links', () => {
       url: testUrl,
     });
     expect(typeof response.data.shortKey).toEqual('string');
-    expect(response.data.shortKey).toHaveLength(7);
+    expect(response.data.shortKey).toHaveLength(config.SHORT_KEY_LENGTH);
     expect(response.data.count).toBe(1);
     expect(response.data.visits).toBe(0);
   });
