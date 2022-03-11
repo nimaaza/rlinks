@@ -4,6 +4,7 @@ const path = require('path');
 const { ENV, PAGINATION_LIMIT } = require('./config');
 const { Link } = require('./db');
 const { createPaginationQuery } = require('./helpers/pagination');
+const { loggerMiddleware: logger, errorHandlerMiddleware: errorHandler } = require('./helpers/middlewares');
 
 const app = express();
 
@@ -22,11 +23,11 @@ if (['DEV', 'TEST'].includes(ENV)) {
   });
 }
 
-app.get('/', (request, response) => {
+app.get('/', logger, (request, response) => {
   response.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/:key', async (request, response) => {
+app.get('/:key', logger, async (request, response) => {
   const shortKey = request.params.key;
   const link = await Link.findOne({ where: { shortKey } });
 
@@ -38,7 +39,7 @@ app.get('/:key', async (request, response) => {
   }
 });
 
-app.post('/shorten', async (request, response) => {
+app.post('/shorten', logger, async (request, response) => {
   const url = request.body.url;
   const shortLink = await Link.transformer(url);
 
@@ -49,7 +50,7 @@ app.post('/shorten', async (request, response) => {
   }
 });
 
-app.post('/links', async (request, response) => {
+app.post('/links', logger, async (request, response) => {
   let { mode, cursor } = request.body;
   cursor = Number(cursor);
   const query = createPaginationQuery(mode, cursor);
@@ -60,5 +61,7 @@ app.post('/links', async (request, response) => {
   const hasNext = links.length === PAGINATION_LIMIT;
   response.json({ links, hasNext, cursor: cursor + 1 });
 });
+
+app.use(errorHandler);
 
 module.exports = app;
