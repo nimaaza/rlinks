@@ -8,8 +8,8 @@ The software comes in one repository containing the code for both back-end and f
 
 1. run `npm install` in each of the rlinks-backend and rlinks-frontend directories.
 2. copy each of the `env.example` files to `.env` files at the root of each directory.
-3. add the required configuration (most notably an existing PostgreSQL database name, username and password is required for the back-end configuration).
-4. `npm run test` can be used to test if everything is configured correctly at this time.
+3. add the required configuration (most notably an existing PostgreSQL database name, username and password are required for the back-end configuration).
+4. running `npm run test` from the back-end directory can be used to test if everything is configured correctly at this time.
 5. if desired, in the back-end directory run `npm run db:seed` to initialize the database with some sample web pages.
 6. run `npm run dev` in the back-end directory to start the back-end server.
 7. if the back-end is running on a port other than 3001 (the default value set in the respective back-end `env.example` file), the `package.json` file of the _front-end_ needs to be updated accordingly to proxy requests to the back-end correctly (look for a `proxy` property at the end of the file).
