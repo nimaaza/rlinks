@@ -1,18 +1,22 @@
 require('dotenv').config();
 
 const ENV = process.env.NODE_ENV;
-let URL, PORT;
 
 if (!['DEV', 'SEED', 'TEST', 'PROD'].includes(ENV)) {
   throw new Error('Undefine environment!');
 }
+
 let SERVER_URL, PORT;
+
+if (['DEV', 'SEED', 'PROD'].includes(ENV)) {
   PORT = process.env.PORT;
 } else if (ENV === 'TEST') {
   PORT = process.env.TEST_PORT;
 }
 
+if (['DEV', 'SEED', 'TEST'].includes(ENV)) {
   SERVER_URL = `${process.env.DEVELOPMENT_URL}:${PORT}`;
+} else if (ENV === 'PROD') {
   SERVER_URL = process.env.PRODUCTION_URL;
 }
 
@@ -48,14 +52,14 @@ const PAGINATION_MODE = {
 };
 
 module.exports = {
-  URL,
+  ENV,
   PORT,
   SERVER_URL,
   DB_HOST,
-  DB_LOGGER,
+  DB_NAME,
   DB_USERNAME,
   DB_PASSWORD,
-  DB_NAME,
+  DB_LOGGER,
   SHORT_KEY_LENGTH,
   PAGINATION_LIMIT,
   PAGINATION_MODE,

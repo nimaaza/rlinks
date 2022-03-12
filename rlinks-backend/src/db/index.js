@@ -18,11 +18,11 @@ const initializeModels = require('./models');
 
 const { Link } = initializeModels(sequelize);
 
-const initDB = async () => {
+const connect = async () => {
   await sequelize.authenticate();
   await sequelize.sync();
 };
 
-if (['DEV', 'TEST', 'PROD'].includes(ENV)) initDB();
+if (['DEV', 'TEST', 'PROD'].includes(ENV)) connect();
 
 module.exports = { sequelize, Link };
