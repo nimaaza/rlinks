@@ -1,6 +1,6 @@
 const {
   config,
-  constants: { TEST_URL },
+  constants: { ANOTHER_SAMPLE_URL },
 } = require('./support');
 
 describe('Tests for utility helper functions', () => {
@@ -11,7 +11,7 @@ describe('Tests for utility helper functions', () => {
   const numberOfStringsToCompare = 10000;
 
   test('URL validator must return true for valid URLs, otherwise false', () => {
-    expect(validUrl(TEST_URL)).toBe(true);
+    expect(validUrl(ANOTHER_SAMPLE_URL)).toBe(true);
     expect(validUrl('invalid_url')).toBe(false);
   });
 

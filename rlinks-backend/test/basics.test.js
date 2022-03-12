@@ -1,7 +1,7 @@
 const {
   Link,
   functions: { doAxiosGet, doAxiosPost, clearDataBase },
-  constants: { youTubeLink, URL },
+  constants: { SAMPLE_URL, SAMPLE_SHORT_KEY },
 } = require('./support');
 
 describe('Test basic backend behaviour to check everything is correctly setup', () => {
@@ -30,8 +30,8 @@ describe('Basic tests for the database', () => {
   });
 
   const checkReturnedLink = link => {
-    expect(link.url).toEqual(youTubeLink.url);
-    expect(link.shortKey).toEqual(youTubeLink.shortKey);
+    expect(link.url).toEqual(SAMPLE_URL);
+    expect(link.shortKey).toEqual(SAMPLE_SHORT_KEY);
     expect(link.count).toBe(1);
     expect(link.visits).toBe(0);
     expect(link).toHaveProperty('title');
@@ -43,10 +43,10 @@ describe('Basic tests for the database', () => {
   };
 
   test('Basic create, read, and delete operations on the Link model work', async () => {
-    const createdLink = await Link.create(youTubeLink);
+    const createdLink = await Link.create({ url: SAMPLE_URL, shortKey: SAMPLE_SHORT_KEY });
     checkReturnedLink(createdLink);
 
-    const readLink = await Link.findOne({ where: { shortKey: youTubeLink.shortKey } });
+    const readLink = await Link.findOne({ where: { shortKey: SAMPLE_SHORT_KEY } });
     checkReturnedLink(readLink);
 
     await readLink.destroy();
