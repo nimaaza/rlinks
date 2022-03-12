@@ -22,12 +22,14 @@ describe('Tests for utility helper functions', () => {
   });
 
   test(`Expect ${numberOfStringsToCompare} generated random strings to have different values`, () => {
-    let oldPrefix = randomAlphaNumbericString(randomStringLength);
-
+    const randomStrings = [];
     for (let i = 0; i < numberOfStringsToCompare; i++) {
-      let newPostfix = randomAlphaNumbericString(randomStringLength);
-      expect(newPostfix).not.toEqual(oldPrefix);
+      randomStrings.push(randomAlphaNumbericString(SHORT_KEY_LENGTH));
     }
+
+    const randomStringsSet = new Set(randomStrings);
+
+    expect(randomStringsSet.size).toBe(numberOfStringsToCompare);
   });
 
   test('Pagination query generator creates the correct query objects', () => {
