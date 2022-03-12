@@ -3,7 +3,9 @@ require('dotenv').config();
 const ENV = process.env.NODE_ENV;
 let URL, PORT;
 
-if (ENV === 'DEV' || ENV === 'PROD') {
+if (!['DEV', 'SEED', 'TEST', 'PROD'].includes(ENV)) {
+  throw new Error('Undefine environment!');
+}
   PORT = process.env.PORT;
 } else if (ENV === 'TEST') {
   PORT = process.env.TEST_PORT;
