@@ -3,15 +3,12 @@ const axios = require('axios');
 const config = require('../src/config');
 const { Link, sequelize } = require('../src/db');
 
-const SHORT_KEY = 'ABCDEFG';
-const URL = 'https://www.youtube.com/watch?v=LPLKOLJAbds';
-const youTubeLink = { url: URL, shortKey: SHORT_KEY };
-const TEST_URL = 'https://www.youtube.com/';
+const SAMPLE_URL = 'https://www.youtube.com/watch?v=LPLKOLJAbds';
 
-const doAxiosGet = endpoint => axios.get(`${config.URL}/${endpoint}`);
+const doAxiosGet = endpoint => axios.get(`${config.SERVER_URL}/${endpoint}`);
 
 const doAxiosPost = (endpoint, data) => {
-  return axios.post(`${config.URL}/${endpoint}`, data, { headers: { 'Content-Type': 'application/json' } });
+  return axios.post(`${config.SERVER_URL}/${endpoint}`, data, { headers: { 'Content-Type': 'application/json' } });
 };
 
 const clearDataBase = async () => {
@@ -21,6 +18,7 @@ const clearDataBase = async () => {
   });
 };
 
+  SAMPLE_URL,
 const functions = {
   doAxiosGet,
   doAxiosPost,

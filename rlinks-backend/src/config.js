@@ -6,15 +6,14 @@ let URL, PORT;
 if (!['DEV', 'SEED', 'TEST', 'PROD'].includes(ENV)) {
   throw new Error('Undefine environment!');
 }
+let SERVER_URL, PORT;
   PORT = process.env.PORT;
 } else if (ENV === 'TEST') {
   PORT = process.env.TEST_PORT;
 }
 
-if (['DEV', 'TEST'].includes(ENV)) {
-  URL = `${process.env.URL}:${PORT}`;
-} else {
-  URL = process.env.PRODUCTION_URL;
+  SERVER_URL = `${process.env.DEVELOPMENT_URL}:${PORT}`;
+  SERVER_URL = process.env.PRODUCTION_URL;
 }
 
 let DB_HOST, DB_LOGGER, DB_USERNAME, DB_PASSWORD, DB_NAME;
@@ -51,7 +50,7 @@ const PAGINATION_MODE = {
 module.exports = {
   URL,
   PORT,
-  ENV,
+  SERVER_URL,
   DB_HOST,
   DB_LOGGER,
   DB_USERNAME,

@@ -24,10 +24,10 @@ describe('Tests for the Link.transformer method and the end-point at /shorten fo
     expect(await Link.transformer('invalid_url')).toBeFalsy();
   });
 
-  test(`Link.transformer should return ${SHORT_KEY} for existing ${URL} incrementing its count`, async () => {
-    const responseBefore = await Link.findOne({ where: { url: URL } });
-    await Link.transformer(URL);
-    const responseAfter = await Link.findOne({ where: { url: URL } });
+  test(`Link.transformer should return ${SAMPLE_SHORT_KEY} for existing ${SAMPLE_URL} incrementing its count`, async () => {
+    const responseBefore = await Link.findOne({ where: { url: SAMPLE_URL } });
+    await Link.transformer(SAMPLE_URL);
+    const responseAfter = await Link.findOne({ where: { url: SAMPLE_URL } });
 
     expect(responseAfter.shortKey).toEqual(responseBefore.shortKey);
     expect(responseAfter.count).toEqual(responseBefore.count + 1);
@@ -55,14 +55,11 @@ describe('Tests for the Link.transformer method and the end-point at /shorten fo
     expect(response.data.visits).toBe(0);
   });
 
-  test(`POST /shorten with ${URL} will respond with ${SHORT_KEY} and the correct number of times its creation is requested`, async () => {
-    const secondCreation = await doAxiosPost('shorten', { url: URL });
-    expect(secondCreation.data.shortKey).toEqual(SHORT_KEY);
+    const secondCreation = await doAxiosPost('shorten', { url: SAMPLE_URL });
     expect(secondCreation.data.count).toBe(2);
     expect(secondCreation.data.visits).toBe(0);
 
-    const thirdCreation = await doAxiosPost('shorten', { url: URL });
-    expect(thirdCreation.data.shortKey).toEqual(SHORT_KEY);
+    const thirdCreation = await doAxiosPost('shorten', { url: SAMPLE_URL });
     expect(thirdCreation.data.count).toBe(3);
     expect(thirdCreation.data.visits).toBe(0);
   });

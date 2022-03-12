@@ -19,8 +19,8 @@ describe('Test basic backend behaviour to check everything is correctly setup', 
   });
 
   test('POST / will receive the URL included in the request body', async () => {
-    const response = await doAxiosPost('', { url: URL });
-    expect(response.data.url).toEqual(URL);
+    const response = await doAxiosPost('', { url: SAMPLE_URL });
+    expect(response.data.url).toEqual(SAMPLE_URL);
   });
 });
 
