@@ -26,7 +26,7 @@ On top of the Link model comes the Node.js/Express.js piece which handles the va
 
 Short links are in the form of app.domain/key. Upon visiting the URL with a valid key, ie., a key formerly generated and assigned to a valid URL by rlinks, the short key is used to index into the database and retrieve the URL for which this key has been generated. If the key is valid, the visit is registered and a redirect HTTP response to the retrieved URL is sent back.
 
-The English alphabet provides 26 lower case and 26 upper case letters. With the 10 decimal digits, we have access to 62 characters from which to build the random short key. At a length of 7, we can produce well above 3 trillion distinct short keys. Currently, there are about 1.9 billion _websites_ and even if each website has on average a 2 figure number of pages, 3 trillion keys must be far more than enough to be associated with each existing web page.
+The English alphabet provides 26 lower case and 26 upper case letters. With the 10 decimal digits, we have access to 62 characters from which to build the random short key. At a length of 7, we can produce well above 3 trillion distinct short keys. Currently, [there are about 1.9 billion _websites_](https://www.statista.com/chart/19058/number-of-websites-online/) and even if each website has on average a 2 figure number of pages, 3 trillion keys must be far more than enough to be associated with each existing web page.
 
 On the client side a React application provides a UI to the link shortening service by communicating with the exposed API on the server side. The UI also provides a simple web form for creating a short link for a valid URL.
 
