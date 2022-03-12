@@ -25,19 +25,19 @@ let DB_HOST, DB_LOGGER, DB_USERNAME, DB_PASSWORD, DB_NAME;
 if (ENV === 'DEV' || ENV === 'SEED') {
   // when seeding, the development database is used
   DB_HOST = process.env.DB_DEV_HOST;
-  DB_LOGGER = process.env.DB_DEV_DB_LOGGER;
+  DB_LOGGER = false;
   DB_USERNAME = process.env.DB_DEV_USERNAME;
   DB_PASSWORD = process.env.DB_DEV_PASSWORD;
   DB_NAME = process.env.DB_DEV_NAME;
 } else if (ENV === 'TEST') {
   DB_HOST = process.env.DB_TEST_HOST;
-  DB_LOGGER = process.env.DB_TEST_DB_LOGGER;
+  DB_LOGGER = false;
   DB_USERNAME = process.env.DB_TEST_USERNAME;
   DB_PASSWORD = process.env.DB_TEST_PASSWORD;
   DB_NAME = process.env.DB_TEST_NAME;
 } else if (ENV === 'PROD') {
   DB_HOST = process.env.DB_PROD_HOST;
-  DB_LOGGER = process.env.DB_PROD_DB_LOGGER;
+  DB_LOGGER = false;
   DB_USERNAME = process.env.DB_PROD_USERNAME;
   DB_PASSWORD = process.env.DB_PROD_PASSWORD;
   DB_NAME = process.env.DB_PROD_NAME;
