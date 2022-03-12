@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 
-const { PAGINATION_LIMIT } = require('./config');
+const { PAGINATION_LIMIT, ENV } = require('./config');
 const { Link } = require('./db');
 const { createPaginationQuery } = require('./helpers/pagination');
 const { loggerMiddleware: logger, errorHandlerMiddleware: errorHandler } = require('./helpers/middlewares');
@@ -12,13 +12,15 @@ app.use(express.static(path.join(__dirname, '/public')));
 app.use(express.json());
 
 // the next two routes are for testing purposes
-app.get('/live', logger, (request, response) => {
-  response.status(200).send('rlinks is live!');
-});
+if (['DEV', 'TEST'].includes(ENV)) {
+  app.get('/live', logger, (request, response) => {
+    response.status(200).send('rlinks is live!');
+  });
 
-app.post('/', logger, (request, response) => {
-  response.status(200).json({ url: request.body.url });
-});
+  app.post('/', logger, (request, response) => {
+    response.status(200).json({ url: request.body.url });
+  });
+}
 
 app.get('/', logger, (request, response) => {
   response.sendFile(path.join(__dirname, 'public', 'index.html'));
