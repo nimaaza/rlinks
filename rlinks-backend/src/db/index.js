@@ -6,12 +6,7 @@ const sequelize = new Sequelize(DB_NAME, DB_USERNAME, DB_PASSWORD, {
   host: DB_HOST,
   dialect: 'postgres',
   logging: DB_LOGGER,
-  dialectOptions: {
-    ssl: {
-      require: ENV === 'PROD',
-      rejectUnauthorized: false,
-    },
-  },
+  dialectOptions: ENV === 'PROD' ? { ssl: { require: true, rejectUnauthorized: false } } : {},
 });
 
 const initializeModels = require('./models');
