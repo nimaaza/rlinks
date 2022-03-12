@@ -37,3 +37,13 @@ Tests have been developed and constantly reviewed/refined to facilitate developm
 There is currently a deployed version of the app reachable at [rlinks.herokuapp.com](https://rlinks.herokuapp.com/). The deployment was initially done manually for testing purposes. The steps included setting up an app on Heroku, setting up the PostgreSQL database service offered by Heroku, configuring the app with the necessary configuration variables like database credentials and other essential configuration variables, moving the main body of the back-end app (augmented with a production build of the front-end app in the designated static directory of the back-end) to a git repository pointing to Heroku, and finally committing and pushing the app to Heroku via git.
 
 In later stages of development the deployment process was automated by means of a primitive Node.js script. A better and more robust script is being developed to do the deployment with a superior approach.
+
+# Roadmap
+
+Given the current status of the app, the following are among the priorities for further improvements:
+
+1. developing a better and smarter deployment script (or leveraging GitHub Actions to that end)
+2. implementing user management so that users can sign up and sign in to manage the short links they have created
+3. allowing users to choose the length of the short key for their short links (and potentially charge them as their selected keys get shorter and simpler)
+4. as the UI becomes more complex, component and E2E testing becomes a necessity, therefore, develop tests for the front-end as well
+5. developing a more engaging and responsive design for the UI.
