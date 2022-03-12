@@ -72,12 +72,12 @@ const addLinkModel = sequelize => {
 
     if (existingUrl) {
       await existingUrl.increment({ count: 1 });
-      return existingUrl.dataValues;
+      return existingUrl;
     } else {
       const shortKey = randomAlphaNumbericString(SHORT_KEY_LENGTH);
       const { title, description, image } = await getLinkPreviewData(url);
-      const createdLink = await Link.create({ url, shortKey, title, description, image });
-      return createdLink.dataValues;
+      const newLink = await Link.create({ url, shortKey, title, description, image });
+      return newLink;
     }
   };
 

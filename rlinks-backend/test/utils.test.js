@@ -7,7 +7,7 @@ describe('Tests for utility helper functions', () => {
   const { randomAlphaNumbericString } = require('../src/helpers/randomize');
   const { validUrl } = require('../src/helpers/url');
 
-  const randomStringLength = config.SHORT_KEY_LENGTH;
+  const { SHORT_KEY_LENGTH } = config;
   const numberOfStringsToCompare = 10000;
 
   test('URL validator must return true for valid URLs, otherwise false', () => {
@@ -15,10 +15,10 @@ describe('Tests for utility helper functions', () => {
     expect(validUrl('invalid_url')).toBe(false);
   });
 
-  test(`Expect return value of the random key generator to be a string of length ${randomStringLength}`, () => {
-    const randomString = randomAlphaNumbericString(randomStringLength);
+  test(`Expect return value of the random key generator to be a string of length ${SHORT_KEY_LENGTH}`, () => {
+    const randomString = randomAlphaNumbericString(SHORT_KEY_LENGTH);
     expect(typeof randomString).toBe('string');
-    expect(randomString).toHaveLength(randomStringLength);
+    expect(randomString).toHaveLength(SHORT_KEY_LENGTH);
   });
 
   test(`Expect ${numberOfStringsToCompare} generated random strings to have different values`, () => {
