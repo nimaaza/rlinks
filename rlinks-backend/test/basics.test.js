@@ -34,6 +34,7 @@ describe('Basic tests for the database', () => {
     expect(link.shortKey).toEqual(SAMPLE_SHORT_KEY);
     expect(link.count).toBe(1);
     expect(link.visits).toBe(0);
+    expect(link.shortKeyLength).toBe(SAMPLE_SHORT_KEY.length);
     expect(link).toHaveProperty('title');
     expect(link).toHaveProperty('description');
     expect(link).toHaveProperty('image');

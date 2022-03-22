@@ -15,7 +15,7 @@ const { Link } = initializeModels(sequelize);
 
 const connect = async () => {
   await sequelize.authenticate();
-  await sequelize.sync();
+  await sequelize.sync({ alter: ENV === 'TEST' });
 };
 
 if (['DEV', 'TEST', 'PROD'].includes(ENV)) connect();

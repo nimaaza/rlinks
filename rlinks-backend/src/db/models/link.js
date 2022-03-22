@@ -41,6 +41,11 @@ const addLinkModel = sequelize => {
         allowNull: false,
         defaultValue: 0,
       },
+      shortKeyLength: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: SHORT_KEY_LENGTH,
+      },
       id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,

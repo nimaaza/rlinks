@@ -37,6 +37,7 @@ describe('Tests for the Link.transformer method and the end-point at /shorten fo
     const response = await Link.transformer(ANOTHER_SAMPLE_URL);
 
     checkShortKeyValidity(response.shortKey);
+    expect(response.shortKeyLength).toBe(response.shortKey.length);
     expect(response.title).toEqual(previewData.title);
     expect(response.description).toEqual(previewData.description);
     expect(response.image).toEqual(previewData.image);
@@ -53,6 +54,7 @@ describe('Tests for the Link.transformer method and the end-point at /shorten fo
     checkShortKeyValidity(response.data.shortKey);
     expect(response.data.count).toBe(1);
     expect(response.data.visits).toBe(0);
+    expect(response.data.shortKeyLength).toBe(response.data.shortKey.length);
   });
 
   test(`POST /shorten with ${SAMPLE_URL} will respond with ${SAMPLE_SHORT_KEY} and the correct number of times its creation is requested`, async () => {
