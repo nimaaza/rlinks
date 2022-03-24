@@ -43,6 +43,8 @@ if (ENV === 'DEV' || ENV === 'SEED') {
   DB_NAME = process.env.DB_PROD_NAME;
 }
 
+const DB_PORT = process.env.DB_PORT || 5432;
+
 const PAGINATION_LIMIT = ['DEV', 'TEST'].includes(ENV) ? 5 : 10;
 const SHORT_KEY_LENGTH = 7;
 const PAGINATION_MODE = {
@@ -56,6 +58,7 @@ module.exports = {
   PORT,
   SERVER_URL,
   DB_HOST,
+  DB_PORT,
   DB_NAME,
   DB_USERNAME,
   DB_PASSWORD,
