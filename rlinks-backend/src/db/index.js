@@ -9,9 +9,7 @@ const sequelize = new Sequelize(DB_NAME, DB_USERNAME, DB_PASSWORD, {
   dialectOptions: ENV === 'PROD' ? { ssl: { require: true, rejectUnauthorized: false } } : {},
 });
 
-const initializeModels = require('./models');
-
-const { Link } = initializeModels(sequelize);
+const { Link, User } = initializeModels(sequelize);
 
 const connect = async () => {
   await sequelize.authenticate();
@@ -20,4 +18,4 @@ const connect = async () => {
 
 if (['DEV', 'TEST', 'PROD'].includes(ENV)) connect();
 
-module.exports = { sequelize, Link };
+module.exports = { sequelize, Link, User };
