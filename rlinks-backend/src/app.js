@@ -5,11 +5,14 @@ const { PAGINATION_LIMIT, ENV } = require('./config');
 const { Link } = require('./db');
 const { createPaginationQuery } = require('./helpers/pagination');
 const { loggerMiddleware: logger, errorHandlerMiddleware: errorHandler } = require('./helpers/middlewares');
+const usersRouter = require('./users');
 
 const app = express();
 
 app.use(express.static(path.join(__dirname, '/public')));
 app.use(express.json());
+
+app.use('/users', logger, usersRouter);
 
 // the next two routes are for testing purposes
 if (['DEV', 'TEST'].includes(ENV)) {

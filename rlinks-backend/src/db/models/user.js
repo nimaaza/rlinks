@@ -9,7 +9,7 @@ const addUserModel = sequelize => {
         unique: true,
         allowNull: false,
       },
-      passwordHash: {
+      hash: {
         type: DataTypes.TEXT,
         allowNull: false,
       },
