@@ -7,7 +7,7 @@ const logger = (info, error) => {
   console.log('----------------------------------------');
 
   if (info) console.info(info);
-  if (error) console.error(error);
+  if (error) console.error('🠊 ', error);
 };
 
 module.exports = logger;
