@@ -1,7 +1,7 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
 
 const { User } = require('../db');
+const passwordHash = require('../helpers/hash');
 
 const router = express.Router();
 
@@ -27,13 +27,6 @@ router.delete('/:id', async (request, response) => {
   const where = queryCondition(request.params.id);
   await User.destroy(where);
 });
-
-const passwordHash = async password => {
-  const saltRounds = 10;
-  const hash = await bcrypt.hash(password, saltRounds);
-
-  return hash;
-};
 
 const queryCondition = param => {
   let clause;
