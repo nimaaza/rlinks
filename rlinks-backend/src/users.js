@@ -1,28 +1,9 @@
-const router = require('express').Router();
 const express = require('express');
 const bcrypt = require('bcrypt');
+
 const { User } = require('./db');
 
-const passwordHash = async password => {
-  const saltRounds = 10;
-  const hash = await bcrypt.hash(password, saltRounds);
-
-  return hash;
-};
-
-const queryCondition = param => {
-  let clause;
-
-  if (Number(param)) {
-    clause = { where: { id: param } };
-  } else {
-    clause = { where: { username: param } };
-  }
-
-  return clause;
-};
-
-router.use(express.json());
+const router = express.Router();
 
 router.post('/', async (request, response, next) => {
   const { username, password } = request.body;
@@ -46,5 +27,24 @@ router.delete('/:id', async (request, response) => {
   const where = queryCondition(request.params.id);
   await User.destroy(where);
 });
+
+const passwordHash = async password => {
+  const saltRounds = 10;
+  const hash = await bcrypt.hash(password, saltRounds);
+
+  return hash;
+};
+
+const queryCondition = param => {
+  let clause;
+
+  if (Number(param)) {
+    clause = { where: { id: param } };
+  } else {
+    clause = { where: { username: param } };
+  }
+
+  return clause;
+};
 
 module.exports = router;
