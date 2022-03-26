@@ -9,8 +9,8 @@ const {
 const { PAGINATION_LIMIT, ENV } = require('./config');
 const { Link } = require('./db');
 const { createPaginationQuery } = require('./helpers/pagination');
-const usersRouter = require('./users');
-const loginRouter = require('./login');
+const usersRouter = require('./routes/users');
+const loginRouter = require('./routes/login');
 
 const app = express();
 
