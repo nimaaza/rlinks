@@ -1,4 +1,31 @@
+const jwt = require('jsonwebtoken');
+
+const { JWT_SECRET } = require('../config');
+const { User } = require('../db');
 const logger = require('./logger');
+
+const authorizationMiddleware = async (request, response, next) => {
+  const authorization = request.get('authorization');
+
+  if (authorization) {
+    try {
+      const { username, id } = jwt.verify(authorization.substring(7), JWT_SECRET);
+
+      if (username && id) {
+        const user = await User.findOne({ where: { username, id } });
+
+        if (user) {
+          request.authorizedUsername = user.username;
+          request.authorizedId = user.id;
+        }
+      }
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  next();
+};
 
 const loggerMiddleware = (request, response, next) => {
   const { method, hostname, ip, originalUrl, params, body } = request;
@@ -20,7 +47,8 @@ const loggerMiddleware = (request, response, next) => {
 
 const errorHandlerMiddleware = (error, request, response, next) => {
   logger(null, error.message);
-  next(error);
+  response.status(400).end();
+  next();
 };
 
-module.exports = { loggerMiddleware, errorHandlerMiddleware };
+module.exports = { authorizationMiddleware, loggerMiddleware, errorHandlerMiddleware };

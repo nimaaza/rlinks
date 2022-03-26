@@ -47,11 +47,7 @@ const DB_PORT = process.env.DB_PORT || 5432;
 
 const PAGINATION_LIMIT = ['DEV', 'TEST'].includes(ENV) ? 5 : 10;
 const SHORT_KEY_LENGTH = 7;
-const PAGINATION_MODE = {
-  CREATED_AT: 'id',
-  COUNT: 'count',
-  VISITS: 'visits',
-};
+const JWT_SECRET = process.env.JWT_SECRET;
 
 module.exports = {
   ENV,
@@ -66,4 +62,5 @@ module.exports = {
   SHORT_KEY_LENGTH,
   PAGINATION_LIMIT,
   PAGINATION_MODE,
+  JWT_SECRET,
 };

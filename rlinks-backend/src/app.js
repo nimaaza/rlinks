@@ -1,18 +1,23 @@
 const express = require('express');
 const path = require('path');
 
+const {
+  authorizationMiddleware: auth,
+  loggerMiddleware: logger,
+  errorHandlerMiddleware: errorHandler,
+} = require('./helpers/middlewares');
 const { PAGINATION_LIMIT, ENV } = require('./config');
 const { Link } = require('./db');
 const { createPaginationQuery } = require('./helpers/pagination');
-const { loggerMiddleware: logger, errorHandlerMiddleware: errorHandler } = require('./helpers/middlewares');
 const usersRouter = require('./users');
+const loginRouter = require('./login');
 
 const app = express();
 
 app.use(express.static(path.join(__dirname, '/public')));
 app.use(express.json());
 
-app.use('/users', logger, usersRouter);
+app.use('/login', loginRouter);
 
 // the next two routes are for testing purposes
 if (['DEV', 'TEST'].includes(ENV)) {
