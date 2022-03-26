@@ -17,24 +17,27 @@ const app = express();
 app.use(express.static(path.join(__dirname, '/public')));
 app.use(express.json());
 
+app.use(auth, logger);
+
+app.use('/users', usersRouter);
 app.use('/login', loginRouter);
 
 // the next two routes are for testing purposes
 if (['DEV', 'TEST'].includes(ENV)) {
-  app.get('/live', logger, (request, response) => {
+  app.get('/live', (request, response) => {
     response.status(200).send('rlinks is live!');
   });
 
-  app.post('/', logger, (request, response) => {
+  app.post('/', (request, response) => {
     response.status(200).json({ url: request.body.url });
   });
 }
 
-app.get('/', logger, (request, response) => {
+app.get('/', (request, response) => {
   response.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/:key', logger, async (request, response) => {
+app.get('/:key', async (request, response) => {
   const shortKey = request.params.key;
   const link = await Link.findOne({ where: { shortKey } });
 
@@ -46,7 +49,7 @@ app.get('/:key', logger, async (request, response) => {
   }
 });
 
-app.post('/shorten', logger, async (request, response) => {
+app.post('/shorten', async (request, response) => {
   const url = request.body.url;
   const shortLink = await Link.transformer(url);
 
@@ -57,7 +60,7 @@ app.post('/shorten', logger, async (request, response) => {
   }
 });
 
-app.post('/links', logger, async (request, response) => {
+app.post('/links', async (request, response) => {
   let { mode, cursor } = request.body;
   cursor = Number(cursor);
   const query = createPaginationQuery(mode, cursor);
