@@ -1,7 +1,10 @@
 const axios = require('axios');
 
 const config = require('../src/config');
-const { Link, sequelize } = require('../src/db');
+const { sequelize, Link, User } = require('../src/db');
+
+const SAMPLE_USERNAME = 'username';
+const SAMPLE_PASSWORD = '12345678';
 
 const SAMPLE_SHORT_KEY = 'ABCDEFG';
 const SAMPLE_URL = 'https://www.youtube.com/watch?v=LPLKOLJAbds';
@@ -21,6 +24,8 @@ const clearDataBase = async () => {
 };
 
 const constants = {
+  SAMPLE_USERNAME,
+  SAMPLE_PASSWORD,
   SAMPLE_SHORT_KEY,
   SAMPLE_URL,
   ANOTHER_SAMPLE_URL,
@@ -32,4 +37,4 @@ const functions = {
   clearDataBase,
 };
 
-module.exports = { config, Link, sequelize, constants, functions };
+module.exports = { config, Link, User, sequelize, constants, functions };

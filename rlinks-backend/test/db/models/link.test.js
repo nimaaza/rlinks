@@ -2,7 +2,7 @@ const {
   Link,
   functions: { clearDataBase },
   constants: { SAMPLE_URL, SAMPLE_SHORT_KEY },
-} = require('./support');
+} = require('../../support');
 
 describe('Basic tests for the Link model', () => {
   beforeEach(async () => {

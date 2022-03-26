@@ -1,12 +1,11 @@
 const server = require('../src/index');
-const { sequelize } = require('../src/db');
+const { sequelize } = require('./support');
 
-require('./basics.test');
-require('./link.test');
-require('./utils.test');
-require('./generation.test');
-require('./redirection.test');
-require('./pagination.test');
+require('./app.test');
+require('./config.test');
+require('./db/index.test');
+require('./helpers/index.test');
+require('./routes/index.test');
 
 afterAll(async () => {
   await sequelize.close();

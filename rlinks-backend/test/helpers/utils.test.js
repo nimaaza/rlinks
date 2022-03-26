@@ -1,11 +1,11 @@
 const {
   config,
   constants: { ANOTHER_SAMPLE_URL },
-} = require('./support');
+} = require('../support');
 
 describe('Tests for utility helper functions', () => {
-  const { randomAlphaNumbericString } = require('../src/helpers/randomize');
-  const { validUrl } = require('../src/helpers/url');
+  const { randomAlphaNumbericString } = require('../../src/helpers/randomize');
+  const { validUrl } = require('../../src/helpers/url');
 
   const { SHORT_KEY_LENGTH } = config;
   const numberOfStringsToCompare = 10000;
@@ -34,7 +34,7 @@ describe('Tests for utility helper functions', () => {
 
   test('Pagination query generator creates the correct query objects', () => {
     const { PAGINATION_LIMIT, PAGINATION_MODE } = config;
-    const { createPaginationQuery } = require('../src/helpers/pagination');
+    const { createPaginationQuery } = require('../../src/helpers/pagination');
     const curosr = 3;
 
     const query = createPaginationQuery(PAGINATION_MODE.CREATED_AT, curosr);
