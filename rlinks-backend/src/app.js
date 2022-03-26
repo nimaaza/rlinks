@@ -72,6 +72,10 @@ app.post('/links', async (request, response) => {
   response.json({ links, hasNext, cursor: cursor + 1 });
 });
 
+app.get('*', (request, response) => {
+  response.sendFile(path.join(__dirname, 'public', 'error.html'));
+});
+
 app.use(errorHandler);
 
 module.exports = app;
