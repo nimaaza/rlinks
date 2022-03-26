@@ -19,6 +19,9 @@ const { Link, User } = initializeModels(sequelize);
 const connect = async () => {
   await sequelize.authenticate();
   await sequelize.sync({ alter: ENV === 'TEST' });
+
+  User.initializePublicUser();
+
   logger('Connection to database established.');
 };
 

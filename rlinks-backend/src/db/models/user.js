@@ -24,6 +24,19 @@ const addUserModel = sequelize => {
     }
   );
 
+  User.initializePublicUser = async () => {
+    const user = await User.findOne({ where: { username: 'public' } });
+
+    if (!user) {
+      const publicUser = {
+        username: 'public',
+        hash: '',
+      };
+
+      await User.create(publicUser);
+    }
+  };
+
   return User;
 };
 
