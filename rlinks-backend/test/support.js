@@ -1,5 +1,6 @@
 const axios = require('axios');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const config = require('../src/config');
 const { sequelize, Link, User } = require('../src/db');
@@ -15,8 +16,25 @@ const ANOTHER_SAMPLE_URL = 'https://www.youtube.com/';
 const doAxiosGet = endpoint => axios.get(`${config.SERVER_URL}/${endpoint}`);
 
 const doAxiosPost = (endpoint, data) => {
-  return axios.post(`${config.SERVER_URL}/${endpoint}`, data, { headers: { 'Content-Type': 'application/json' } });
+
+const doAxiosPatch = (endpoint, data, headers) => {
+  return axios.patch(`${config.SERVER_URL}/${endpoint}`, data, {
+    headers: {
+      ...headers,
+      'Content-Type': 'application/json',
+    },
+    validateStatus: () => true,
+  });
 };
+
+const doAxiosDelete = (endpoint, headers) => {
+  return axios.delete(`${config.SERVER_URL}/${endpoint}`, {
+    headers: { ...headers },
+    validateStatus: () => true,
+  });
+};
+
+const loginToken = (username, id) => jwt.sign({ username, id }, config.JWT_SECRET);
 
 const clearDataBase = async () => {
   const query = {
@@ -39,6 +57,9 @@ const constants = {
 const functions = {
   doAxiosGet,
   doAxiosPost,
+  doAxiosPatch,
+  doAxiosDelete,
+  loginToken,
   clearDataBase,
 };
 
