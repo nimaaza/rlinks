@@ -13,9 +13,14 @@ const SAMPLE_SHORT_KEY = 'ABCDEFG';
 const SAMPLE_URL = 'https://www.youtube.com/watch?v=LPLKOLJAbds';
 const ANOTHER_SAMPLE_URL = 'https://www.youtube.com/';
 
-const doAxiosGet = endpoint => axios.get(`${config.SERVER_URL}/${endpoint}`);
+const doAxiosGet = endpoint => axios.get(`${config.SERVER_URL}/${endpoint}`, { validateStatus: () => true });
 
 const doAxiosPost = (endpoint, data) => {
+  return axios.post(`${config.SERVER_URL}/${endpoint}`, data, {
+    headers: { 'Content-Type': 'application/json' },
+    validateStatus: () => true,
+  });
+};
 
 const doAxiosPatch = (endpoint, data, headers) => {
   return axios.patch(`${config.SERVER_URL}/${endpoint}`, data, {
