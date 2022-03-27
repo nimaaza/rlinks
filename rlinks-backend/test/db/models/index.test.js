@@ -1,2 +1,2 @@
 require('./link.test');
-// require('./user.test');
+require('./user.test');

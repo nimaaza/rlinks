@@ -30,6 +30,7 @@
     "sequelize": "^6.16.2"
   },
   "devDependencies": {
+    "@types/sequelize": "^4.28.11",
     "axios": "^0.26.0",
     "eslint": "^8.9.0",
     "eslint-plugin-jest": "^26.1.1",
