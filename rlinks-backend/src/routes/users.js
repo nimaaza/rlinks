@@ -1,6 +1,7 @@
 const express = require('express');
 
 const { User } = require('../db');
+const { authorizeMiddleware: authorize } = require('../helpers/middlewares');
 const passwordHash = require('../helpers/hash');
 
 const router = express.Router();
@@ -12,33 +13,37 @@ router.post('/', async (request, response) => {
   if (existingUser) {
     response.json({ error: 'Username is already taken.' });
   } else {
-  const hash = await passwordHash(password);
+    const hash = await passwordHash(password);
     const user = await User.create({ username, hash });
     response.json({ username: user.username });
   }
 });
 
-router.patch('/:id', async (request, response) => {
+router.patch('/:key', authorize, async (request, response) => {
+  const query = queryGenerator(request.params.key);
+  const user = await User.findOne(query);
   const hash = await passwordHash(request.body.password);
-  const where = queryCondition(request.params.id);
-  await User.update({ hash }, where);
+  await user.update({ hash });
+  response.json({ username: user.username });
 });
 
-router.delete('/:id', async (request, response) => {
-  const where = queryCondition(request.params.id);
-  await User.destroy(where);
+router.delete('/:key', authorize, async (request, response) => {
+  const query = queryGenerator(request.params.key);
+  await User.destroy(query);
+  response.end();
 });
 
-const queryCondition = param => {
-  let clause;
+// allow both /users/:id and /users/:username to identify the resource
+const queryGenerator = param => {
+  let whereClause;
 
   if (Number(param)) {
-    clause = { where: { id: param } };
+    whereClause = { where: { id: param } };
   } else {
-    clause = { where: { username: param } };
+    whereClause = { where: { username: param } };
   }
 
-  return clause;
+  return whereClause;
 };
 
 module.exports = router;

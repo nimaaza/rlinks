@@ -27,6 +27,14 @@ const authorizationMiddleware = async (request, response, next) => {
   next();
 };
 
+const authorizeMiddleware = (request, response, next) => {
+  if (request.authorizedUsername && request.authorizedId) {
+    next();
+  } else {
+    response.json({ error: 'Unauthorized access.' }).end();
+  }
+};
+
 const loggerMiddleware = (request, response, next) => {
   const { method, hostname, ip, originalUrl, params, body } = request;
 
@@ -51,4 +59,4 @@ const errorHandlerMiddleware = (error, request, response, next) => {
   next();
 };
 
-module.exports = { authorizationMiddleware, loggerMiddleware, errorHandlerMiddleware };
+module.exports = { authorizationMiddleware, authorizeMiddleware, loggerMiddleware, errorHandlerMiddleware };
