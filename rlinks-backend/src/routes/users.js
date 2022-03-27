@@ -5,15 +5,16 @@ const passwordHash = require('../helpers/hash');
 
 const router = express.Router();
 
-router.post('/', async (request, response, next) => {
+router.post('/', async (request, response) => {
   const { username, password } = request.body;
-  const hash = await passwordHash(password);
+  const existingUser = await User.findOne({ where: { username } });
 
-  try {
+  if (existingUser) {
+    response.json({ error: 'Username is already taken.' });
+  } else {
+  const hash = await passwordHash(password);
     const user = await User.create({ username, hash });
     response.json({ username: user.username });
-  } catch (err) {
-    next(err);
   }
 });
 
