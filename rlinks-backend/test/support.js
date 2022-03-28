@@ -13,17 +13,17 @@ const SAMPLE_SHORT_KEY = 'ABCDEFG';
 const SAMPLE_URL = 'https://www.youtube.com/watch?v=LPLKOLJAbds';
 const ANOTHER_SAMPLE_URL = 'https://www.youtube.com/';
 
-const doAxiosGet = endpoint => axios.get(`${config.SERVER_URL}/${endpoint}`, { validateStatus: () => true });
+const doAxiosGet = endpoint => axios.get(httpLink(endpoint), { validateStatus: () => true });
 
 const doAxiosPost = (endpoint, data) => {
-  return axios.post(`${config.SERVER_URL}/${endpoint}`, data, {
+  return axios.post(httpLink(endpoint), data, {
     headers: { 'Content-Type': 'application/json' },
     validateStatus: () => true,
   });
 };
 
 const doAxiosPatch = (endpoint, data, headers) => {
-  return axios.patch(`${config.SERVER_URL}/${endpoint}`, data, {
+  return axios.patch(httpLink(endpoint), data, {
     headers: {
       ...headers,
       'Content-Type': 'application/json',
@@ -33,11 +33,14 @@ const doAxiosPatch = (endpoint, data, headers) => {
 };
 
 const doAxiosDelete = (endpoint, headers) => {
-  return axios.delete(`${config.SERVER_URL}/${endpoint}`, {
+  return axios.delete(httpLink(endpoint), {
     headers: { ...headers },
     validateStatus: () => true,
   });
 };
+
+const httpLink = endpoint =>
+  endpoint.startsWith('/') ? `${config.SERVER_URL}${endpoint}` : `${config.SERVER_URL}/${endpoint}`;
 
 const loginToken = (username, id) => jwt.sign({ username, id }, config.JWT_SECRET);
 
