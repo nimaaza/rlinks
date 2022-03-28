@@ -6,11 +6,11 @@ const {
   loggerMiddleware: logger,
   errorHandlerMiddleware: errorHandler,
 } = require('./helpers/middlewares');
-const { PAGINATION_LIMIT, ENV } = require('./config');
+const { ENV } = require('./config');
 const { Link } = require('./db');
-const { createPaginationQuery } = require('./helpers/pagination');
 const usersRouter = require('./routes/users');
 const loginRouter = require('./routes/login');
+const linksRouter = require('./routes/links');
 
 const app = express();
 
@@ -21,6 +21,7 @@ app.use(auth, logger);
 
 app.use('/users', usersRouter);
 app.use('/login', loginRouter);
+app.use('/links', linksRouter);
 
 // the next two routes are for testing purposes
 if (ENV === 'TEST') {
@@ -47,29 +48,6 @@ app.get('/:key', async (request, response) => {
   } else {
     response.sendFile(path.join(__dirname, 'public', 'error.html'));
   }
-});
-
-app.post('/shorten', async (request, response) => {
-  const url = request.body.url;
-  const shortLink = await Link.transformer(url);
-
-  if (shortLink) {
-    response.json(shortLink);
-  } else {
-    response.json({ error: 'Invalid URL!' });
-  }
-});
-
-app.post('/links', async (request, response) => {
-  let { mode, cursor } = request.body;
-  cursor = Number(cursor);
-  const query = createPaginationQuery(mode, cursor);
-
-  let links = await Link.findAll(query);
-  links = links.map(link => link.dataValues);
-
-  const hasNext = links.length === PAGINATION_LIMIT;
-  response.json({ links, hasNext, cursor: cursor + 1 });
 });
 
 app.get('*', (request, response) => {

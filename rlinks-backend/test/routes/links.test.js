@@ -44,12 +44,12 @@ describe('Tests for the Link.transformer method and the end-point at /shorten fo
   });
 
   test('POST /shorten will result in an error message for an invalid URL', async () => {
-    const response = await doAxiosPost('shorten', { url: 'invalid_link' });
+    const response = await doAxiosPost('links/shorten', { url: 'invalid_link' });
     expect(response.data).toEqual({ error: 'Invalid URL!' });
   });
 
   test(`POST /shorten with ${ANOTHER_SAMPLE_URL} will response with a valid short key`, async () => {
-    const response = await doAxiosPost('shorten', { url: ANOTHER_SAMPLE_URL });
+    const response = await doAxiosPost('links/shorten', { url: ANOTHER_SAMPLE_URL });
 
     checkShortKeyValidity(response.data.shortKey);
     expect(response.data.count).toBe(1);
@@ -58,12 +58,12 @@ describe('Tests for the Link.transformer method and the end-point at /shorten fo
   });
 
   test(`POST /shorten with ${SAMPLE_URL} will respond with ${SAMPLE_SHORT_KEY} and the correct number of times its creation is requested`, async () => {
-    const secondCreation = await doAxiosPost('shorten', { url: SAMPLE_URL });
+    const secondCreation = await doAxiosPost('links/shorten', { url: SAMPLE_URL });
     expect(secondCreation.data.shortKey).toEqual(SAMPLE_SHORT_KEY);
     expect(secondCreation.data.count).toBe(2);
     expect(secondCreation.data.visits).toBe(0);
 
-    const thirdCreation = await doAxiosPost('shorten', { url: SAMPLE_URL });
+    const thirdCreation = await doAxiosPost('links/shorten', { url: SAMPLE_URL });
     expect(thirdCreation.data.shortKey).toEqual(SAMPLE_SHORT_KEY);
     expect(thirdCreation.data.count).toBe(3);
     expect(thirdCreation.data.visits).toBe(0);
