@@ -1,10 +1,8 @@
-const express = require('express');
+const router = require('express').Router();
 
 const { User } = require('../db');
 const { authorizeMiddleware: authorize } = require('../helpers/middlewares');
 const passwordHash = require('../helpers/hash');
-
-const router = express.Router();
 
 router.post('/', async (request, response) => {
   const { username, password } = request.body;
@@ -34,16 +32,6 @@ router.delete('/:key', authorize, async (request, response) => {
 });
 
 // allow both /users/:id and /users/:username to identify the resource
-const queryGenerator = param => {
-  let whereClause;
-
-  if (Number(param)) {
-    whereClause = { where: { id: param } };
-  } else {
-    whereClause = { where: { username: param } };
-  }
-
-  return whereClause;
-};
+const queryGenerator = param => (Number(param) ? { where: { id: param } } : { where: { username: param } });
 
 module.exports = router;

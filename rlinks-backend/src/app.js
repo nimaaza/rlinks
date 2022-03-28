@@ -23,7 +23,7 @@ app.use('/users', usersRouter);
 app.use('/login', loginRouter);
 
 // the next two routes are for testing purposes
-if (['DEV', 'TEST'].includes(ENV)) {
+if (ENV === 'TEST') {
   app.get('/live', (request, response) => {
     response.status(200).send('rlinks is live!');
   });
