@@ -15,23 +15,35 @@ const authorizationMiddleware = async (request, response, next) => {
         const user = await User.findOne({ where: { username, id } });
 
         if (user) {
-          request.authorizedUsername = user.username;
-          request.authorizedId = user.id;
+          request.authenticateId = id => id === user.id;
+          request.authenticateUsername = username => username === user.username;
         }
       }
     } catch (err) {
       next(err);
     }
+  } else {
+    request.authenticateId = () => false;
+    request.authenticateUsername = () => false;
   }
 
   next();
 };
 
-const authorizeMiddleware = (request, response, next) => {
-  if (request.authorizedUsername && request.authorizedId) {
+const authenticateMiddleware = (request, response, next) => {
+  let { key, id, username } = request.params;
+
+  if (key) {
+    id = Number(key);
+    username = key;
+  } else {
+    id = Number(id);
+  }
+
+  if ((id && request.authenticateId(id)) || (username && request.authenticateUsername(username))) {
     next();
   } else {
-    response.json({ error: 'Unauthorized access.' }).end();
+    next(authorizationError);
   }
 };
 
@@ -59,4 +71,4 @@ const errorHandlerMiddleware = (error, request, response, next) => {
   next();
 };
 
-module.exports = { authorizationMiddleware, authorizeMiddleware, loggerMiddleware, errorHandlerMiddleware };
+module.exports = { authorizationMiddleware, authenticateMiddleware, loggerMiddleware, errorHandlerMiddleware };

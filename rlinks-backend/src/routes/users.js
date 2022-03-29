@@ -1,7 +1,7 @@
 const router = require('express').Router();
 
 const { User } = require('../db');
-const { authorizeMiddleware: authorize } = require('../helpers/middlewares');
+const { authenticateMiddleware: authenticate } = require('../helpers/middlewares');
 const passwordHash = require('../helpers/hash');
 
 router.post('/', async (request, response) => {
@@ -17,7 +17,7 @@ router.post('/', async (request, response) => {
   }
 });
 
-router.patch('/:key', authorize, async (request, response) => {
+router.patch('/:key', authenticate, async (request, response) => {
   const query = queryGenerator(request.params.key);
   const user = await User.findOne(query);
   const hash = await passwordHash(request.body.password);
@@ -25,7 +25,7 @@ router.patch('/:key', authorize, async (request, response) => {
   response.json({ username: user.username });
 });
 
-router.delete('/:key', authorize, async (request, response) => {
+router.delete('/:key', authenticate, async (request, response) => {
   const query = queryGenerator(request.params.key);
   await User.destroy(query);
   response.end();

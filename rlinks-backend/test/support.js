@@ -5,9 +5,12 @@ const jwt = require('jsonwebtoken');
 const config = require('../src/config');
 const { sequelize, Link, User } = require('../src/db');
 
-const SAMPLE_USERNAME = 'username';
-const SAMPLE_PASSWORD = '12345678';
+const SAMPLE_USERNAME = 'username1';
+const SAMPLE_PASSWORD = '123456789';
 const SAMPLE_PASSWORD_HASH = bcrypt.hash(SAMPLE_PASSWORD, config.SALT_ROUNDS);
+const ANOTHER_SAMPLE_USERNAME = 'username2';
+const ANOTHER_SAMPLE_PASSWORD = '987654321';
+const ANOTHER_SAMPLE_PASSWORD_HASH = bcrypt.hash(ANOTHER_SAMPLE_PASSWORD, config.SALT_ROUNDS);
 
 const SAMPLE_SHORT_KEY = 'ABCDEFG';
 const SAMPLE_URL = 'https://www.youtube.com/watch?v=LPLKOLJAbds';
@@ -57,6 +60,9 @@ const constants = {
   SAMPLE_USERNAME,
   SAMPLE_PASSWORD,
   SAMPLE_PASSWORD_HASH,
+  ANOTHER_SAMPLE_USERNAME,
+  ANOTHER_SAMPLE_PASSWORD,
+  ANOTHER_SAMPLE_PASSWORD_HASH,
   SAMPLE_SHORT_KEY,
   SAMPLE_URL,
   ANOTHER_SAMPLE_URL,
