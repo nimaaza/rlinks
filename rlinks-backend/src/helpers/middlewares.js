@@ -9,7 +9,7 @@ const authorizationError = new Error('Unauthorized access.');
 const authorizationMiddleware = async (request, response, next) => {
   const authorization = request.get('authorization');
 
-  if (authorization) {
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
     try {
       const { username, id } = jwt.verify(authorization.substring(7), JWT_SECRET);
 

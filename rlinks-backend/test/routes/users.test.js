@@ -30,8 +30,8 @@ describe('Tests for the users router', () => {
 
     expect(await bcrypt.compare(newPassword, afterUpdate.hash)).toBe(success);
     if (success) {
-      // expect(data).toHaveProperty('username');
-      // expect(data.username).toEqual(SAMPLE_USERNAME);
+      expect(data).toHaveProperty('username');
+      expect(data.username).toEqual(SAMPLE_USERNAME);
     } else {
       checkError(data);
     }
