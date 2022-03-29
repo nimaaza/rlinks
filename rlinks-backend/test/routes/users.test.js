@@ -33,7 +33,7 @@ describe('Tests for the users router', () => {
       // expect(data).toHaveProperty('username');
       // expect(data.username).toEqual(SAMPLE_USERNAME);
     } else {
-      //   checkError(data);
+      checkError(data);
     }
   };
 
@@ -75,7 +75,7 @@ describe('Tests for the users router', () => {
       expect(countAfter).toEqual(countBefore - 1);
     } else {
       expect(countAfter).toEqual(countBefore);
-      //   checkError(data);
+      checkError(data);
     }
   };
 
