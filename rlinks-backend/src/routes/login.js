@@ -15,8 +15,8 @@ router.post('/', async (request, response, next) => {
     const token = jwt.sign({ username: user.username, id: user.id }, JWT_SECRET);
     response.status(200).json({ token, username: user.username });
   } else {
-    const error = new Error('invalid username and/or password');
-    error.externalMessage = 'invalid username and/or password';
+    const error = new Error('Invalid username and/or password.');
+    error.externalMessage = 'Invalid username and/or password.';
     next(error);
   }
 });
