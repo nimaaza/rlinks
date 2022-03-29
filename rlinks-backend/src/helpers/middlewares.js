@@ -58,11 +58,11 @@ const loggerMiddleware = (request, response, next) => {
   let message = `${method} ${originalUrl} from ${hostname} at ${ip}`;
 
   if (Object.keys(params).length > 0) {
-    message = `${message}\n  ↳ params: ${JSON.stringify(params)}`;
+    message = `${message}\n    ↳ params: ${JSON.stringify(params)}`;
   }
 
   if (Object.keys(body).length > 0) {
-    message = `${message}\n  ↳ body: ${JSON.stringify(body)}`;
+    message = `${message}\n    ↳ body: ${JSON.stringify(body)}`;
   }
 
   logger(message);
