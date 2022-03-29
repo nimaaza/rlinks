@@ -4,12 +4,14 @@ const { User } = require('../db');
 const { authenticateMiddleware: authenticate } = require('../helpers/middlewares');
 const passwordHash = require('../helpers/hash');
 
-router.post('/', async (request, response) => {
+router.post('/', async (request, response, next) => {
   const { username, password } = request.body;
   const existingUser = await User.findOne({ where: { username } });
 
   if (existingUser) {
-    response.json({ error: 'Username is already taken.' });
+    const error = new Error('Username is already taken.');
+    error.externalMessage = 'Username is already taken.';
+    next(error);
   } else {
     const hash = await passwordHash(password);
     const user = await User.create({ username, hash });

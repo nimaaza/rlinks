@@ -4,7 +4,7 @@ const { JWT_SECRET } = require('../config');
 const { User } = require('../db');
 const logger = require('./logger');
 
-const authorizationError = new Error('Unauthorized access.');
+const externalAuthorizationErrorMessage = 'Unauthorized access.';
 
 const authorizationMiddleware = async (request, response, next) => {
   const authorization = request.get('authorization');
@@ -21,8 +21,9 @@ const authorizationMiddleware = async (request, response, next) => {
           request.authenticateUsername = username => username === user.username;
         }
       }
-    } catch (err) {
-      next(authorizationError);
+    } catch (error) {
+      error.externalMessage = externalAuthorizationErrorMessage;
+      next(error);
     }
   } else {
     request.authenticateId = () => false;
@@ -45,7 +46,9 @@ const authenticateMiddleware = (request, response, next) => {
   if ((id && request.authenticateId(id)) || (username && request.authenticateUsername(username))) {
     next();
   } else {
-    next(authorizationError);
+    const error = new Error();
+    error.externalMessage = externalAuthorizationErrorMessage;
+    next(error);
   }
 };
 
@@ -69,7 +72,7 @@ const loggerMiddleware = (request, response, next) => {
 
 const errorHandlerMiddleware = (error, request, response, next) => {
   logger(null, error.message);
-  response.json({ error: error.message }).end();
+  response.json({ error: error.externalMessage });
   next();
 };
 
