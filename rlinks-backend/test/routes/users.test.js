@@ -28,7 +28,7 @@ describe('Tests for the users router', () => {
       expect(data).toHaveProperty('username');
       expect(data.username).toEqual(SAMPLE_USERNAME);
     } else {
-      checkError(data);
+      checkError(data, unauthorizedAccessMessage);
     }
   };
 
@@ -51,7 +51,7 @@ describe('Tests for the users router', () => {
       expect(countAfter).toEqual(countBefore - 1);
     } else {
       expect(countAfter).toEqual(countBefore);
-      checkError(data);
+      checkError(data, unauthorizedAccessMessage);
     }
   };
 
@@ -62,13 +62,33 @@ describe('Tests for the users router', () => {
     const countAfter = (await User.findAll({})).length;
 
     expect(countAfter).toEqual(countBefore);
-    checkError(data);
+    checkError(data, unauthorizedAccessMessage);
   };
 
-  const checkError = data => {
+  const checkError = (data, message) => {
     expect(data).toHaveProperty('error');
-    expect(data.error).toEqual('Unauthorized access.');
+    expect(data.error).toEqual(message);
   };
+
+  test('POST /users with missing username will result in an error message', async () => {
+    const noUsernameErrorMessage = 'Username missing.';
+
+    let response = await doAxiosPost('/users', { username: '', password: SAMPLE_PASSWORD });
+    checkError(response.data, noUsernameErrorMessage);
+
+    response = await doAxiosPost('/users', { password: SAMPLE_PASSWORD });
+    checkError(response.data, noUsernameErrorMessage);
+  });
+
+  test('POST /users with missing password will result in an error message', async () => {
+    const noPasswordErrorMessage = 'Password missing.';
+
+    let response = await doAxiosPost('/users', { username: SAMPLE_USERNAME, password: '' });
+    checkError(response.data, noPasswordErrorMessage);
+
+    response = await doAxiosPost('/users', { username: SAMPLE_USERNAME });
+    checkError(response.data, noPasswordErrorMessage);
+  });
 
   test(`POST /users with ${SAMPLE_USERNAME} and ${SAMPLE_PASSWORD} as password results in creation of the respective user in the database`, async () => {
     const userBeforePost = await User.findOne({ where: { username: SAMPLE_USERNAME } });

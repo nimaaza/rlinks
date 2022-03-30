@@ -6,6 +6,19 @@ const passwordHash = require('../helpers/hash');
 
 router.post('/', async (request, response, next) => {
   const { username, password } = request.body;
+
+  if (!username || username.trim().length === 0) {
+    const error = new Error('Username missing.');
+    error.externalMessage = 'Username missing.';
+    return next(error);
+  }
+
+  if (!password || password.trim().length === 0) {
+    const error = new Error('Password missing.');
+    error.externalMessage = 'Password missing.';
+    return next(error);
+  }
+
   const existingUser = await User.findOne({ where: { username } });
 
   if (existingUser) {
