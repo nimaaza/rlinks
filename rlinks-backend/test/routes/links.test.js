@@ -1,63 +1,32 @@
 const {
   config: { PAGINATION_LIMIT, PAGINATION_MODE, SHORT_KEY_LENGTH },
   Link,
-  functions: { doAxiosGet, doAxiosPost, clearDataBase },
+  functions: { doAxiosPost, clearDataBase },
   constants: { SAMPLE_URL, SAMPLE_SHORT_KEY, ANOTHER_SAMPLE_URL },
 } = require('../support');
 
-describe('Tests for the Link.transformer method and the end-point at /shorten for shortening links', () => {
-  const { getLinkPreviewData } = require('../../src/helpers/previews');
-  let previewData;
-
-  const checkShortKeyValidity = key => {
-    expect(typeof key).toEqual('string');
-    expect(key).toHaveLength(SHORT_KEY_LENGTH);
-  };
-
+describe('Tests for the end-point at /links/shorten for shortening links', () => {
   beforeEach(async () => {
     await clearDataBase();
     await Link.create({ url: SAMPLE_URL, shortKey: SAMPLE_SHORT_KEY });
-    previewData = await getLinkPreviewData(ANOTHER_SAMPLE_URL);
   });
 
-  test('Link.transformer should return falsy for an invalid URL', async () => {
-    expect(await Link.transformer('invalid_url')).toBeFalsy();
-  });
-
-  test(`Link.transformer should return ${SAMPLE_SHORT_KEY} for existing ${SAMPLE_URL} incrementing its count`, async () => {
-    const responseBefore = await Link.findOne({ where: { url: SAMPLE_URL } });
-    await Link.transformer(SAMPLE_URL);
-    const responseAfter = await Link.findOne({ where: { url: SAMPLE_URL } });
-
-    expect(responseAfter.shortKey).toEqual(responseBefore.shortKey);
-    expect(responseAfter.count).toEqual(responseBefore.count + 1);
-  });
-
-  test('Link.transformer should return required meta data and a new key for a valid URL not existing in the database', async () => {
-    const response = await Link.transformer(ANOTHER_SAMPLE_URL);
-
-    checkShortKeyValidity(response.shortKey);
-    expect(response.shortKeyLength).toBe(response.shortKey.length);
-    expect(response.title).toEqual(previewData.title);
-    expect(response.description).toEqual(previewData.description);
-    expect(response.image).toEqual(previewData.image);
-  });
-
-  test('POST /shorten will result in an error message for an invalid URL', async () => {
+  test('POST /links/shorten will result in an error message for an invalid URL', async () => {
     const response = await doAxiosPost('links/shorten', { url: 'invalid_link' });
     expect(response.data).toEqual({ error: 'Invalid URL!' });
   });
 
-  test(`POST /shorten with ${ANOTHER_SAMPLE_URL} will response with a valid short key`, async () => {
+  test(`POST /links/shorten with ${ANOTHER_SAMPLE_URL} will response with a valid short key`, async () => {
     const response = await doAxiosPost('links/shorten', { url: ANOTHER_SAMPLE_URL });
 
-    checkShortKeyValidity(response.data.shortKey);
+    expect(typeof response.data.shortKey).toEqual('string');
+    expect(response.data.shortKey).toHaveLength(SHORT_KEY_LENGTH);
     expect(response.data.count).toBe(1);
     expect(response.data.visits).toBe(0);
     expect(response.data.shortKeyLength).toBe(response.data.shortKey.length);
   });
 
-  test(`POST /shorten with ${SAMPLE_URL} will respond with ${SAMPLE_SHORT_KEY} and the correct number of times its creation is requested`, async () => {
+  test(`POST /links/shorten with ${SAMPLE_URL} for which the key ${SAMPLE_SHORT_KEY} is already generated returns the key and sets the correct number of times its creation is requested`, async () => {
     const secondCreation = await doAxiosPost('links/shorten', { url: SAMPLE_URL });
     expect(secondCreation.data.shortKey).toEqual(SAMPLE_SHORT_KEY);
     expect(secondCreation.data.count).toBe(2);
@@ -68,44 +37,14 @@ describe('Tests for the Link.transformer method and the end-point at /shorten fo
     expect(thirdCreation.data.count).toBe(3);
     expect(thirdCreation.data.visits).toBe(0);
   });
-});
 
-describe('Tests for proper redirection upon visiting a shortened link', () => {
-  const numberOfPastVisits = 3;
+  // test('POST /links/shorten sets the public user as the owner of the short link when no token is provided', async () => {});
 
-  const visit = key => doAxiosGet(key);
+  // test('POST /links/shorten sets the current user as the owner of the short link when a valid token is provided', async () => {});
 
-  beforeEach(async () => {
-    await clearDataBase();
-    await Link.create({ url: SAMPLE_URL, shortKey: SAMPLE_SHORT_KEY });
-  });
+  // test('POST /links/shorten rejects creation of links when an invalid token is provided', async () => {
 
-  test(`GET /${SAMPLE_SHORT_KEY} (a valid key) receives a redirect response`, async () => {
-    const response = await visit(SAMPLE_SHORT_KEY);
-    expect(response.request._redirectable._isRedirect).toBe(true);
-  });
-
-  test(`GET /${SAMPLE_SHORT_KEY} (a valid key) gets redirected to ${SAMPLE_URL}`, async () => {
-    const response = await visit(SAMPLE_SHORT_KEY);
-    expect(response.request._redirectable._currentUrl).toEqual(SAMPLE_URL);
-  });
-
-  test(`GET /${SAMPLE_SHORT_KEY.toLowerCase()} must be redirected to the error page with a link to the app`, async () => {
-    const response = await visit(SAMPLE_SHORT_KEY.toLowerCase());
-    expect(response.data).toContain('No one has ever been here before!');
-    expect(response.data).toContain('We wonder how you got here?');
-    expect(response.data).toContain('<a href="/">');
-  });
-
-  test('Number of times a link is visited must be recorded correctly', async () => {
-    for (let i = 0; i < numberOfPastVisits; i++) {
-      await visit(SAMPLE_SHORT_KEY);
-    }
-
-    const link = await Link.findOne({ where: { shortKey: SAMPLE_SHORT_KEY } });
-
-    expect(link.visits).toBe(numberOfPastVisits);
-  });
+  // });
 });
 
 describe('Tests for the end-point at /links for the pagination of produced short links', () => {
