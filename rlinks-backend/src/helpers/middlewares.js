@@ -50,7 +50,10 @@ const loggerMiddleware = (request, response, next) => {
 };
 
 const errorHandlerMiddleware = (error, request, response, next) => {
-  logger(null, error.message);
+  if (error.message) {
+    logger(null, error.message);
+  }
+
   response.json({ error: error.externalMessage });
   next();
 };

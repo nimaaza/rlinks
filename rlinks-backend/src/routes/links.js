@@ -4,14 +4,16 @@ const { PAGINATION_LIMIT } = require('../config');
 const { Link } = require('../db');
 const { createPaginationQuery } = require('../helpers/pagination');
 
-router.post('/shorten', async (request, response) => {
+router.post('/shorten', async (request, response, next) => {
   const url = request.body.url;
   const shortLink = await Link.transformer(url);
 
   if (shortLink) {
     response.json(shortLink);
   } else {
-    response.json({ error: 'Invalid URL!' });
+    const error = new Error('Invalid URL!');
+    error.externalMessage = 'Invalid URL!';
+    next(error);
   }
 });
 

@@ -24,11 +24,11 @@ router.post('/', async (request, response, next) => {
   if (existingUser) {
     const error = new Error('Username is already taken.');
     error.externalMessage = 'Username is already taken.';
-    next(error);
+    return next(error);
   } else {
     const hash = await passwordHash(password);
     const user = await User.create({ username, hash });
-    response.json({ username: user.username });
+    return response.json({ username: user.username });
   }
 });
 
