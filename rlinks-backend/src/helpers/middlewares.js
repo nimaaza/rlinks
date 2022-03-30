@@ -1,52 +1,31 @@
 const jwt = require('jsonwebtoken');
 
 const { JWT_SECRET } = require('../config');
-const { User } = require('../db');
 const logger = require('./logger');
 
 const externalAuthorizationErrorMessage = 'Unauthorized access.';
 
-const authorizationMiddleware = async (request, response, next) => {
+const authorizationMiddleware = (request, response, next) => {
   const authorization = request.get('authorization');
 
   if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    const token = authorization.substring(7);
     try {
-      const { username, id } = jwt.verify(authorization.substring(7), JWT_SECRET);
-
+      const { username, id } = jwt.verify(token, JWT_SECRET);
       if (username && id) {
-        const user = await User.findOne({ where: { username, id } });
-
-        if (user) {
-          request.authenticateId = id => id === user.id;
-          request.authenticateUsername = username => username === user.username;
-        }
+        request.user = { username, id };
+        next();
+      } else {
+        const error = new Error('Invalid token: missing user data.');
+        error.externalMessage = externalAuthorizationErrorMessage;
+        next(error);
       }
     } catch (error) {
       error.externalMessage = externalAuthorizationErrorMessage;
       next(error);
     }
   } else {
-    request.authenticateId = () => false;
-    request.authenticateUsername = () => false;
-  }
-
-  next();
-};
-
-const authenticateMiddleware = (request, response, next) => {
-  let { key, id, username } = request.params;
-
-  if (key) {
-    id = Number(key);
-    username = key;
-  } else {
-    id = Number(id);
-  }
-
-  if ((id && request.authenticateId(id)) || (username && request.authenticateUsername(username))) {
-    next();
-  } else {
-    const error = new Error();
+    const error = new Error('Invalid or no token.');
     error.externalMessage = externalAuthorizationErrorMessage;
     next(error);
   }
@@ -76,4 +55,4 @@ const errorHandlerMiddleware = (error, request, response, next) => {
   next();
 };
 
-module.exports = { authorizationMiddleware, authenticateMiddleware, loggerMiddleware, errorHandlerMiddleware };
+module.exports = { authorizationMiddleware, loggerMiddleware, errorHandlerMiddleware };
