@@ -10,6 +10,9 @@ const initializeModels = sequelize => {
     foreignKey: { allowNull: false },
   });
 
+  sequelize.Link = Link;
+  sequelize.User = User;
+
   return { Link, User };
 };
 
