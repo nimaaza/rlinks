@@ -9,7 +9,6 @@ const {
 describe('Tests for the end-point at /links/shorten for shortening links', () => {
   beforeEach(async () => {
     await clearDataBase();
-    await Link.create({ url: SAMPLE_URL, shortKey: SAMPLE_SHORT_KEY });
   });
 
   test('POST /links/shorten will result in an error message for an invalid URL', async () => {
@@ -17,7 +16,7 @@ describe('Tests for the end-point at /links/shorten for shortening links', () =>
     expect(response.data).toEqual({ error: 'Invalid URL!' });
   });
 
-  test(`POST /links/shorten with ${ANOTHER_SAMPLE_URL} will response with a valid short key`, async () => {
+  test(`POST /links/shorten with ${ANOTHER_SAMPLE_URL} will responsd with a valid short key`, async () => {
     const response = await doAxiosPost('links/shorten', { url: ANOTHER_SAMPLE_URL });
 
     expect(typeof response.data.shortKey).toEqual('string');
@@ -28,6 +27,7 @@ describe('Tests for the end-point at /links/shorten for shortening links', () =>
   });
 
   test(`POST /links/shorten with ${SAMPLE_URL} for which the key ${SAMPLE_SHORT_KEY} is already generated returns the key and sets the correct number of times its creation is requested`, async () => {
+    await Link.create({ url: SAMPLE_URL, shortKey: SAMPLE_SHORT_KEY });
     const secondCreation = await doAxiosPost('links/shorten', { url: SAMPLE_URL });
     expect(secondCreation.data.shortKey).toEqual(SAMPLE_SHORT_KEY);
     expect(secondCreation.data.count).toBe(2);
@@ -76,10 +76,17 @@ describe('Tests for the end-point at /links for the pagination of produced short
 
   beforeAll(async () => {
     await clearDataBase();
-
     urls.forEach(async url => {
-      await Link.transformer(url);
+      await Link.transformer(url, 'public');
     });
+
+    // The first test in this suit fails seemingly because the
+    // database is not in a consistent state when the tests begin
+    // to run. This following two queries delay the running of
+    // the tests and are meant as a quick and temporary work around
+    // until a better solution is found.
+    await Link.findAll({});
+    await User.findAll({});
   });
 
   const testPaginationOrder = (page, mode) => {
