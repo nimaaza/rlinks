@@ -70,18 +70,18 @@ const addLinkModel = sequelize => {
     }
   );
 
-  Link.transformer = async url => {
+  Link.transformer = async (url, username) => {
     if (!validUrl(url)) return;
-
     const existingUrl = await Link.findOne({ where: { url } });
 
     if (existingUrl) {
       await existingUrl.increment({ count: 1 });
       return existingUrl;
     } else {
+      const user = await sequelize.User.findOne({ where: { username } });
       const shortKey = randomAlphaNumbericString(SHORT_KEY_LENGTH);
       const { title, description, image } = await getLinkPreviewData(url);
-      const newLink = await Link.create({ url, shortKey, title, description, image });
+      const newLink = await user.createLink({ url, shortKey, title, description, image });
       return newLink;
     }
   };

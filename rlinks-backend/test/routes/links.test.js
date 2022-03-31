@@ -1,8 +1,9 @@
 const {
   config: { PAGINATION_LIMIT, PAGINATION_MODE, SHORT_KEY_LENGTH },
   Link,
-  functions: { doAxiosPost, clearDataBase },
-  constants: { SAMPLE_URL, SAMPLE_SHORT_KEY, ANOTHER_SAMPLE_URL },
+  User,
+  functions: { doAxiosPost, clearDataBase, loginToken },
+  constants: { SAMPLE_URL, SAMPLE_SHORT_KEY, ANOTHER_SAMPLE_URL, SAMPLE_USERNAME, SAMPLE_PASSWORD_HASH },
 } = require('../support');
 
 describe('Tests for the end-point at /links/shorten for shortening links', () => {
@@ -38,13 +39,34 @@ describe('Tests for the end-point at /links/shorten for shortening links', () =>
     expect(thirdCreation.data.visits).toBe(0);
   });
 
-  // test('POST /links/shorten sets the public user as the owner of the short link when no token is provided', async () => {});
+  test('POST /links/shorten sets the public user as the owner of the short link when no token is provided', async () => {
+    const { data } = await doAxiosPost('/links/shorten', { url: SAMPLE_URL });
+    const link = await Link.findOne({ where: { shortKey: data.shortKey } });
+    const user = await link.getUser();
 
-  // test('POST /links/shorten sets the current user as the owner of the short link when a valid token is provided', async () => {});
+    expect(user.username).toEqual('public');
+  });
 
-  // test('POST /links/shorten rejects creation of links when an invalid token is provided', async () => {
+  test('POST /links/shorten sets the current user as the owner of the short link when a valid token is provided', async () => {
+    const user = await User.create({ username: SAMPLE_USERNAME, hash: await SAMPLE_PASSWORD_HASH });
+    const token = loginToken(user.username, user.id);
+    const authorizationHeader = { Authorization: `Bearer ${token}` };
+    const { data } = await doAxiosPost('/links/shorten', { url: SAMPLE_URL }, authorizationHeader);
+    const link = await Link.findOne({ where: { shortKey: data.shortKey } });
+    const linkUser = await link.getUser();
 
-  // });
+    expect(linkUser.username).toEqual(user.username);
+  });
+
+  test('POST /links/shorten rejects creation of links when an invalid token is provided', async () => {
+    const user = await User.create({ username: SAMPLE_USERNAME, hash: await SAMPLE_PASSWORD_HASH });
+    const token = loginToken(user.username, user.id);
+    const authorizationHeader = { Authorization: `Bearer ${token}invalid_token` };
+    const { data } = await doAxiosPost('/links/shorten', { url: SAMPLE_URL }, authorizationHeader);
+
+    expect(data).toHaveProperty('error');
+    expect(data.error).toEqual('Unauthorized access.');
+  });
 });
 
 describe('Tests for the end-point at /links for the pagination of produced short links', () => {

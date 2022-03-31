@@ -25,9 +25,25 @@ const authorizationMiddleware = (request, response, next) => {
       next(error);
     }
   } else {
-    const error = new Error('Invalid or no token.');
+
+const setUserMiddleware = (request, response, next) => {
+  const authorization = request.get('authorization');
+
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    const token = authorization.substring(7);
+    try {
+      const { username, id } = jwt.verify(token, JWT_SECRET);
+      if (username && id) {
+        request.user = { username, id };
+        next();
+      }
+    } catch (error) {
     error.externalMessage = externalAuthorizationErrorMessage;
     next(error);
+    }
+  } else {
+    request.publicUser = true;
+    next();
   }
 };
 
@@ -58,4 +74,4 @@ const errorHandlerMiddleware = (error, request, response, next) => {
   next();
 };
 
-module.exports = { authorizationMiddleware, loggerMiddleware, errorHandlerMiddleware };
+module.exports = { authorizationMiddleware, setUserMiddleware, loggerMiddleware, errorHandlerMiddleware };

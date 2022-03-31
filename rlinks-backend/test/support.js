@@ -18,9 +18,12 @@ const ANOTHER_SAMPLE_URL = 'https://www.youtube.com/';
 
 const doAxiosGet = endpoint => axios.get(httpLink(endpoint), { validateStatus: () => true });
 
-const doAxiosPost = (endpoint, data) => {
+const doAxiosPost = (endpoint, data, headers) => {
   return axios.post(httpLink(endpoint), data, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      ...headers,
+      'Content-Type': 'application/json',
+    },
     validateStatus: () => true,
   });
 };
@@ -54,6 +57,7 @@ const clearDataBase = async () => {
 
   await Link.destroy(query);
   await User.destroy(query);
+  await User.create({ username: 'public', hash: '' });
 };
 
 const constants = {
