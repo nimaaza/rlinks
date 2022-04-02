@@ -16,7 +16,7 @@ const authorizationMiddleware = (request, response, next) => {
         request.user = { username, id };
         next();
       } else {
-        const error = new Error('Invalid token: missing user data.');
+        const error = new Error(`Invalid token: missing data (${id ? 'username is missing' : 'user id is missing'}).`);
         error.externalMessage = externalAuthorizationErrorMessage;
         next(error);
       }
