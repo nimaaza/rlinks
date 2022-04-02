@@ -25,6 +25,11 @@ const authorizationMiddleware = (request, response, next) => {
       next(error);
     }
   } else {
+    const error = new Error('Token is missing.');
+    error.externalMessage = externalAuthorizationErrorMessage;
+    next(error);
+  }
+};
 
 const setUserMiddleware = (request, response, next) => {
   const authorization = request.get('authorization');
@@ -38,8 +43,8 @@ const setUserMiddleware = (request, response, next) => {
         next();
       }
     } catch (error) {
-    error.externalMessage = externalAuthorizationErrorMessage;
-    next(error);
+      error.externalMessage = externalAuthorizationErrorMessage;
+      next(error);
     }
   } else {
     request.publicUser = true;
