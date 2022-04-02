@@ -9,16 +9,20 @@ if (ENV === 'TEST') {
   };
 } else {
   getLinkPreviewData = async url => {
-    const data = await getLinkPreview(url);
+    try {
+      const data = await getLinkPreview(url);
 
-    const { title, description } = data;
-    const image = data.images[0];
+      const { title, description } = data;
+      const image = data.images[0];
 
-    return {
-      title,
-      description,
-      image,
-    };
+      return {
+        title,
+        description,
+        image,
+      };
+    } catch (error) {
+      return { title: '', description: '', image: '' };
+    }
   };
 }
 
