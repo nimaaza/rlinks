@@ -1,4 +1,4 @@
-const fetchShortLinkFor = url => doFetch('shorten', { url });
+const fetchShortLinkFor = url => doFetch('links/shorten', { url });
 
 const fetchNextPage = (mode, cursor) => doFetch('links', { mode, cursor });
 
