@@ -2,7 +2,7 @@ const router = require('express').Router();
 
 const { PAGINATION_LIMIT } = require('../config');
 const { setUserMiddleware: setUser } = require('../helpers/middlewares');
-const { Link } = require('../db');
+const { Link, User } = require('../db');
 const { createPaginationQuery } = require('../helpers/pagination');
 
 router.post('/shorten', setUser, async (request, response, next) => {
@@ -20,12 +20,20 @@ router.post('/shorten', setUser, async (request, response, next) => {
   }
 });
 
-router.post('/', async (request, response) => {
-  let { mode, cursor } = request.body;
-  cursor = Number(cursor);
+router.post('/', setUser, async (request, response) => {
+  const { mode, cursor, mine } = request.body;
   const query = createPaginationQuery(mode, cursor);
 
-  let links = await Link.findAll(query);
+  let links;
+
+  if (mine && request.user) {
+    const username = request.user.username;
+    const user = await User.findOne({ where: { username } });
+    links = await user.getLinks(query);
+  } else {
+    links = await Link.findAll(query);
+  }
+
   links = links.map(link => link.dataValues);
 
   const hasNext = links.length === PAGINATION_LIMIT;

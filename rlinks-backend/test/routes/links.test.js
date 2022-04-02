@@ -6,6 +6,75 @@ const {
   constants: { SAMPLE_URL, SAMPLE_SHORT_KEY, ANOTHER_SAMPLE_URL, SAMPLE_USERNAME, SAMPLE_PASSWORD_HASH },
 } = require('../support');
 
+const urls = require('../../data');
+const { CREATED_AT, COUNT, VISITS } = PAGINATION_MODE;
+
+const doInitialPaginationTest = async (query, userId, headers) => {
+  const response = await doAxiosPost('links', query, headers);
+
+  expect(response.data).toHaveProperty('links');
+  expect(response.data).toHaveProperty('hasNext');
+  expect(response.data).toHaveProperty('cursor');
+  expect(response.data.links).toHaveLength(PAGINATION_LIMIT);
+  expect(response.data.cursor).toBe(1);
+  testPaginationOrder(response.data.links, query.mode);
+
+  if (userId) {
+    checkUserId(response.data.links, userId);
+  }
+};
+
+const doNextPaginationTest = async (linksCount, paginations, query, userId, headers) => {
+  const mode = query.mode;
+  let cursor = 0;
+
+  for (let i = 0; i < paginations; i++) {
+    query.cursor = cursor;
+    const nextPage = await doAxiosPost('links', query, headers);
+    expect(nextPage.data.links).toHaveLength(PAGINATION_LIMIT);
+    expect(nextPage.data.hasNext).toBe(true);
+    expect(nextPage.data.cursor).toBe(cursor + 1);
+    testPaginationOrder(nextPage.data.links, mode);
+    cursor = nextPage.data.cursor;
+
+    if (userId) {
+      checkUserId(nextPage.data.links, userId);
+    }
+  }
+
+  query.cursor = cursor;
+  const lastPage = await doAxiosPost('links', query, headers);
+  expect(lastPage.data.links).toHaveLength(linksCount - paginations * PAGINATION_LIMIT);
+  expect(lastPage.data.hasNext).toBe(false);
+  testPaginationOrder(lastPage.data.links, mode);
+
+  if (userId) {
+    checkUserId(lastPage.data.links, userId);
+  }
+};
+
+const testPaginationOrder = (page, mode) => {
+  for (let i = 1; i < page.length; i++) {
+    expect(page[i][mode]).toBeLessThanOrEqual(page[i - 1][mode]);
+  }
+};
+
+const checkUserId = (links, id) => links.forEach(link => expect(link.UserId).toEqual(id));
+
+const countLoadedLinks = async (query, expectedCount, headers) => {
+  let linksCount = 0;
+  let data;
+
+  do {
+    const response = await doAxiosPost('links', query, headers);
+    data = response.data;
+    linksCount += data.links.length;
+    query.cursor = data.cursor;
+  } while (data.hasNext);
+
+  expect(linksCount).toEqual(expectedCount);
+};
+
 describe('Tests for the end-point at /links/shorten for shortening links', () => {
   beforeEach(async () => {
     await clearDataBase();
@@ -69,10 +138,8 @@ describe('Tests for the end-point at /links/shorten for shortening links', () =>
   });
 });
 
-describe('Tests for the end-point at /links for the pagination of produced short links', () => {
-  const urls = require('../../data');
+describe('Tests for the end-point at /links for the pagination of produced short links (no user logged in)', () => {
   const paginationRequests = Math.floor(urls.length / PAGINATION_LIMIT);
-  const { CREATED_AT, COUNT, VISITS } = PAGINATION_MODE;
 
   beforeAll(async () => {
     await clearDataBase();
@@ -89,57 +156,22 @@ describe('Tests for the end-point at /links for the pagination of produced short
     await User.findAll({});
   });
 
-  const testPaginationOrder = (page, mode) => {
-    for (let i = 1; i < page.length; i++) {
-      expect(page[i][mode]).toBeLessThanOrEqual(page[i - 1][mode]);
-    }
-  };
-
-  const doInitialPaginationTest = async mode => {
-    const response = await doAxiosPost('links', { mode, cursor: 0 });
-
-    expect(response.data).toHaveProperty('links');
-    expect(response.data).toHaveProperty('hasNext');
-    expect(response.data).toHaveProperty('cursor');
-    expect(response.data.links).toHaveLength(PAGINATION_LIMIT);
-    expect(response.data.cursor).toBe(1);
-    testPaginationOrder(response.data.links, mode);
-  };
-
-  const doNextPaginationTest = async mode => {
-    let cursor = 0;
-
-    for (let i = 0; i < paginationRequests; i++) {
-      const nextPage = await doAxiosPost('links', { mode, cursor });
-      expect(nextPage.data.links).toHaveLength(PAGINATION_LIMIT);
-      expect(nextPage.data.hasNext).toBe(true);
-      expect(nextPage.data.cursor).toBe(cursor + 1);
-      testPaginationOrder(nextPage.data.links, mode);
-      cursor = nextPage.data.cursor;
-    }
-
-    const lastPage = await doAxiosPost('links', { mode, cursor });
-    expect(lastPage.data.links).toHaveLength(urls.length - paginationRequests * PAGINATION_LIMIT);
-    expect(lastPage.data.hasNext).toBe(false);
-    testPaginationOrder(lastPage.data.links, mode);
-  };
-
   test('Initial request to the end-point with cursor = 0 should return the first page of links sorted newest to oldest', async () => {
-    await doInitialPaginationTest(CREATED_AT);
+    await doInitialPaginationTest({ mode: CREATED_AT, cursor: 0 });
   });
 
   test('Initial request to the end-point with cursor = 0 should return the first page of links sorted according to most creation attempts', async () => {
-    await doInitialPaginationTest(COUNT);
+    await doInitialPaginationTest({ mode: COUNT, cursor: 0 });
   });
 
   test('Initial request to the end-point with cursor = 0 should return the first page of links sorted according to most visits', async () => {
-    await doInitialPaginationTest(VISITS);
+    await doInitialPaginationTest({ mode: VISITS, cursor: 0 });
   });
 
   test(`On the first ${paginationRequests} pagination requests (sorted according to ID number), hasNext must return true, on the ${
     paginationRequests + 1
   }th request must return false with the remaining number of last page links`, async () => {
-    await doNextPaginationTest(CREATED_AT);
+    await doNextPaginationTest(urls.length, paginationRequests, { mode: CREATED_AT, cursor: 0 });
   });
 
   test(`On the first ${paginationRequests} pagination requests (sorted according to creation attempts), hasNext must return true, on the ${
@@ -151,7 +183,7 @@ describe('Tests for the end-point at /links for the pagination of produced short
       await link.save();
     });
 
-    await doNextPaginationTest(COUNT);
+    await doNextPaginationTest(urls.length, paginationRequests, { mode: COUNT, cursor: 0 });
   });
 
   test(`On the first ${paginationRequests} pagination requests (sorted according to visits), hasNext must return true, on the ${
@@ -163,6 +195,124 @@ describe('Tests for the end-point at /links for the pagination of produced short
       await link.save();
     });
 
-    await doNextPaginationTest(VISITS);
+    await doNextPaginationTest(urls.length, paginationRequests, { mode: VISITS, cursor: 0 });
+  });
+
+  test('Pagination should load all links when mine is missing', async () => {
+    await countLoadedLinks({ mode: CREATED_AT, cursor: 0 }, urls.length);
+    await countLoadedLinks({ mode: COUNT, cursor: 0 }, urls.length);
+    await countLoadedLinks({ mode: VISITS, cursor: 0 }, urls.length);
+  });
+
+  test('Pagination should load all links when mine is set to false', async () => {
+    await countLoadedLinks({ mode: CREATED_AT, cursor: 0, mine: false }, urls.length);
+    await countLoadedLinks({ mode: COUNT, cursor: 0, mine: false }, urls.length);
+    await countLoadedLinks({ mode: VISITS, cursor: 0, mine: false }, urls.length);
+  });
+});
+
+describe('Tests for the end-point at /links for the pagination of produced short links (with user logged in)', () => {
+  let user, authorizationHeader;
+  const numberOfLinksWithPublicUser = 5;
+  const paginationRequests = Math.floor((urls.length - numberOfLinksWithPublicUser) / PAGINATION_LIMIT);
+
+  beforeAll(async () => {
+    await clearDataBase();
+    user = await User.create({ username: SAMPLE_USERNAME, hash: await SAMPLE_PASSWORD_HASH });
+    authorizationHeader = { Authorization: `Bearer ${loginToken(user.username, user.id)}` };
+
+    urls.forEach(async (url, index) => {
+      if (index < numberOfLinksWithPublicUser) {
+        await Link.transformer(url, 'public');
+      } else {
+        await Link.transformer(url, user.username);
+      }
+    });
+
+    // The first test in this suit fails seemingly because the
+    // database is not in a consistent state when the tests begin
+    // to run. This following two queries delay the running of
+    // the tests and are meant as a quick and temporary work around
+    // until a better solution is found.
+    await Link.findAll({});
+    await User.findAll({});
+  });
+
+  test('Initial request to the end-point with cursor = 0, mine = true should return the first page of own links sorted newest to oldest', async () => {
+    await doInitialPaginationTest({ mode: CREATED_AT, cursor: 0, mine: true }, user.id, authorizationHeader);
+  });
+
+  test('Initial request to the end-point with cursor = 0, mine = true should return the first page of own of links sorted according to most creation attempts', async () => {
+    await doInitialPaginationTest({ mode: COUNT, cursor: 0, mine: true }, user.id, authorizationHeader);
+  });
+
+  test('Initial request to the end-point with cursor = 0, mine = true should return the first page of own of links sorted according to most visits', async () => {
+    await doInitialPaginationTest({ mode: VISITS, cursor: 0, mine: true }, user.id, authorizationHeader);
+  });
+
+  test(`On the first ${paginationRequests} pagination requests (sorted according to ID number), hasNext must return true, on the ${
+    paginationRequests + 1
+  }th request must return false with the remaining number of last page links`, async () => {
+    await doNextPaginationTest(
+      urls.length - numberOfLinksWithPublicUser,
+      paginationRequests,
+      { mode: CREATED_AT, cursor: 0, mine: true },
+      user.id,
+      authorizationHeader
+    );
+  });
+
+  test(`On the first ${paginationRequests} pagination requests (sorted according to creation attempts), hasNext must return true, on the ${
+    paginationRequests + 1
+  }th request must return false with the remaining number of last page links`, async () => {
+    let links = await Link.findAll();
+    links.forEach(async link => {
+      link.count = Math.ceil(Math.random() * 100);
+      await link.save();
+    });
+
+    await doNextPaginationTest(
+      urls.length - numberOfLinksWithPublicUser,
+      paginationRequests,
+      { mode: COUNT, cursor: 0, mine: true },
+      user.id,
+      authorizationHeader
+    );
+  });
+
+  test(`On the first ${paginationRequests} pagination requests (sorted according to visits), hasNext must return true, on the ${
+    paginationRequests + 1
+  }th request must return false with the remaining number of last page links`, async () => {
+    let links = await Link.findAll();
+    links.forEach(async link => {
+      link.visits = Math.ceil(Math.random() * 100);
+      await link.save();
+    });
+
+    await doNextPaginationTest(
+      urls.length - numberOfLinksWithPublicUser,
+      paginationRequests,
+      { mode: VISITS, cursor: 0, mine: true },
+      user.id,
+      authorizationHeader
+    );
+  });
+
+  test('Pagination should load all own links when mine is set to true', async () => {
+    await countLoadedLinks(
+      { mode: CREATED_AT, cursor: 0, mine: true },
+      urls.length - numberOfLinksWithPublicUser,
+      authorizationHeader
+    );
+    await countLoadedLinks(
+      { mode: COUNT, cursor: 0, mine: true },
+      urls.length - numberOfLinksWithPublicUser,
+      authorizationHeader
+    );
+    await countLoadedLinks(
+      { mode: VISITS, cursor: 0, mine: true },
+      urls.length - numberOfLinksWithPublicUser,
+      authorizationHeader
+    );
   });
 });
