@@ -2,8 +2,16 @@ const {
   config: { PAGINATION_LIMIT, PAGINATION_MODE, SHORT_KEY_LENGTH },
   Link,
   User,
-  functions: { doAxiosPost, clearDataBase, loginToken },
-  constants: { SAMPLE_URL, SAMPLE_SHORT_KEY, ANOTHER_SAMPLE_URL, SAMPLE_USERNAME, SAMPLE_PASSWORD_HASH },
+  functions: { doAxiosPost, doAxiosDelete, clearDataBase, loginToken },
+  constants: {
+    SAMPLE_URL,
+    SAMPLE_SHORT_KEY,
+    ANOTHER_SAMPLE_URL,
+    SAMPLE_USERNAME,
+    SAMPLE_PASSWORD_HASH,
+    ANOTHER_SAMPLE_USERNAME,
+    ANOTHER_SAMPLE_PASSWORD_HASH,
+  },
 } = require('../support');
 
 const urls = require('../../data');
@@ -314,5 +322,90 @@ describe('Tests for the end-point at /links for the pagination of produced short
       urls.length - numberOfLinksWithPublicUser,
       authorizationHeader
     );
+  });
+});
+
+describe('Tests for deletion of created short links', () => {
+  let user, headers, publicLink, userLink;
+
+  beforeEach(async () => {
+    await clearDataBase();
+    user = await User.create({
+      username: SAMPLE_USERNAME,
+      hash: await SAMPLE_PASSWORD_HASH,
+    });
+
+    publicLink = await Link.transformer(SAMPLE_URL, 'public');
+    userLink = await Link.transformer(ANOTHER_SAMPLE_URL, user.username);
+
+    headers = { Authorization: `Bearer ${loginToken(user.username, user.id)}` };
+  });
+
+  const numberOfLinks = async () => (await Link.findAll({})).length;
+
+  test('DELETE /links/:id will be rejected if no token is provided', async () => {
+    const numberOfLinksBefore = await numberOfLinks();
+    const { data } = await doAxiosDelete(`/links/${userLink.id}`);
+    const numberOfLinksAfter = await numberOfLinks();
+
+    expect(data).toHaveProperty('error');
+    expect(data.error).toEqual('Unauthorized access.');
+    expect(numberOfLinksAfter).toBe(numberOfLinksBefore);
+  });
+
+  test('DELETE /links/:id will be rejected if a link with given id does not exist', async () => {
+    const numberOfLinksBefore = await numberOfLinks();
+    const { data } = await doAxiosDelete(`/links/${userLink.id + 100}`, headers);
+    const numberOfLinksAfter = await numberOfLinks();
+
+    expect(data).toHaveProperty('error');
+    expect(data.error).toEqual('Unauthorized access.');
+    expect(numberOfLinksAfter).toBe(numberOfLinksBefore);
+  });
+
+  test('DELETE /links/:id will be rejected if token is not valid', async () => {
+    const numberOfLinksBefore = await numberOfLinks();
+    headers.Authorization = `${headers.Authorization}make_token_invalid`;
+    const { data } = await doAxiosDelete(`/links/${userLink.id + 100}`, headers);
+    const numberOfLinksAfter = await numberOfLinks();
+
+    expect(data).toHaveProperty('error');
+    expect(data.error).toEqual('Unauthorized access.');
+    expect(numberOfLinksAfter).toBe(numberOfLinksBefore);
+  });
+
+  test('DELETE /links/:id will be rejected for a short link owned by public user', async () => {
+    const numberOfLinksBefore = await numberOfLinks();
+    const { data } = await doAxiosDelete(`/links/${publicLink.id}`, headers);
+    const numberOfLinksAfter = await numberOfLinks();
+
+    expect(data).toHaveProperty('error');
+    expect(data.error).toEqual('Unauthorized access.');
+    expect(numberOfLinksAfter).toBe(numberOfLinksBefore);
+  });
+
+  test('DELETE /links/:id will be rejected if link belongs to another user', async () => {
+    const anotherUser = await User.create({
+      username: ANOTHER_SAMPLE_USERNAME,
+      hash: await ANOTHER_SAMPLE_PASSWORD_HASH,
+    });
+    const anotherLink = await Link.transformer('https://www.google.com/', anotherUser.username);
+    const numberOfLinksBefore = await numberOfLinks();
+    const { data } = await doAxiosDelete(`/links/${anotherLink.id}`, headers);
+    const numberOfLinksAfter = await numberOfLinks();
+
+    expect(data).toHaveProperty('error');
+    expect(data.error).toEqual('Unauthorized access.');
+    expect(numberOfLinksAfter).toBe(numberOfLinksBefore);
+  });
+
+  test('DELETE /links/:id will succeed if a valid token is given and link belongs to requesting user', async () => {
+    const numberOfLinksBefore = await numberOfLinks();
+    const { data } = await doAxiosDelete(`/links/${userLink.id}`, headers);
+    const numberOfLinksAfter = await numberOfLinks();
+
+    expect(data).toHaveProperty('message');
+    expect(data.message).toEqual('Link deleted.');
+    expect(numberOfLinksAfter).toBe(numberOfLinksBefore - 1);
   });
 });
