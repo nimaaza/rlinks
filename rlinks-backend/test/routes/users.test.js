@@ -1,6 +1,12 @@
 const {
   User,
-  constants: { SAMPLE_USERNAME, SAMPLE_PASSWORD, SAMPLE_PASSWORD_HASH },
+  constants: {
+    SAMPLE_USERNAME,
+    SAMPLE_PASSWORD,
+    SAMPLE_PASSWORD_HASH,
+    ANOTHER_SAMPLE_USERNAME,
+    ANOTHER_SAMPLE_PASSWORD_HASH,
+  },
   functions: { clearDataBase, doAxiosPost, doAxiosPatch, doAxiosDelete, loginToken },
 } = require('../support');
 
@@ -39,6 +45,24 @@ describe('Tests for the users router', () => {
     checkError(data, unauthorizedAccessMessage);
   };
 
+  const testPasswordUpdateFromAnotherUser = async param => {
+    const user = await User.create({
+      username: SAMPLE_USERNAME,
+      hash: await SAMPLE_PASSWORD_HASH,
+    });
+    const anotherUser = await User.create({
+      username: ANOTHER_SAMPLE_USERNAME,
+      hash: await ANOTHER_SAMPLE_PASSWORD_HASH,
+    });
+    const token = loginToken(user.username, user.id);
+    const authorizationHeader = { Authorization: `Bearer ${token}` };
+    const { data } = await doAxiosPatch(`users/${anotherUser[param]}`, { password: newPassword }, authorizationHeader);
+    const anotherUserAfterUpdate = await User.findOne({ where: { id: anotherUser.id } });
+
+    checkError(data, 'Unauthorized access.');
+    expect(await bcrypt.compare(newPassword, anotherUserAfterUpdate.hash)).toBeFalsy();
+  };
+
   const deleteWithToken = async (param, success) => {
     const user = await User.create({ username: SAMPLE_USERNAME, hash: await SAMPLE_PASSWORD_HASH });
     const countBefore = (await User.findAll({})).length;
@@ -63,6 +87,25 @@ describe('Tests for the users router', () => {
 
     expect(countAfter).toEqual(countBefore);
     checkError(data, unauthorizedAccessMessage);
+  };
+
+  const testDeleteAnotherUsername = async param => {
+    const user = await User.create({
+      username: SAMPLE_USERNAME,
+      hash: await SAMPLE_PASSWORD_HASH,
+    });
+    const anotherUser = await User.create({
+      username: ANOTHER_SAMPLE_USERNAME,
+      hash: await ANOTHER_SAMPLE_PASSWORD_HASH,
+    });
+    const token = loginToken(user.username, user.id);
+    const authorizationHeader = { Authorization: `Bearer ${token}` };
+    const { data } = await doAxiosDelete(`/users/${anotherUser[param]}`, authorizationHeader);
+    const anotherUserAfterDeleteAttempt = await User.findOne({ where: { id: anotherUser.id } });
+
+    checkError(data, 'Unauthorized access.');
+    expect(anotherUserAfterDeleteAttempt).toBeTruthy();
+    expect(anotherUserAfterDeleteAttempt.username).toEqual(ANOTHER_SAMPLE_USERNAME);
   };
 
   const checkError = (data, message) => {
@@ -135,6 +178,14 @@ describe('Tests for the users router', () => {
     await testPasswordUpdateWithoutToken('username');
   });
 
+  test('PATCH /users/:id prevents users to change password of another user', async () => {
+    await testPasswordUpdateFromAnotherUser('id');
+  });
+
+  test('PATCH /users/:username prevents users to change password of another user', async () => {
+    await testPasswordUpdateFromAnotherUser('username');
+  });
+
   test('DELETE /users/:id allows authorized user to delete their username', async () => {
     await deleteWithToken('id', true);
   });
@@ -157,5 +208,13 @@ describe('Tests for the users router', () => {
 
   test('DELETE /users/:username prevents unauthorized (without token) user from deleting a username', async () => {
     await deleteWithoutToken('username');
+  });
+
+  test('DELETE /users/:id prevents users from deleting the username from another user', async () => {
+    await testDeleteAnotherUsername('id');
+  });
+
+  test('DELETE /users/:username prevents users from deleting the username from another user', async () => {
+    await testDeleteAnotherUsername('username');
   });
 });

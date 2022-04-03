@@ -32,17 +32,36 @@ router.post('/', async (request, response, next) => {
   }
 });
 
-router.patch('/:key', auth, async (request, response) => {
+router.patch('/:key', auth, async (request, response, next) => {
   const query = queryGenerator(request.params.key);
   const user = await User.findOne(query);
+
+  if (user.id !== request.user.id) {
+    const error = new Error(
+      `Unauthorized action prohibited: user with id ${request.user.id} tried changing password for user with id ${user.id}`
+    );
+    error.externalMessage = 'Unauthorized access.';
+    return next(error);
+  }
+
   const hash = await passwordHash(request.body.password);
   await user.update({ hash });
   response.json({ username: user.username });
 });
 
-router.delete('/:key', auth, async (request, response) => {
+router.delete('/:key', auth, async (request, response, next) => {
   const query = queryGenerator(request.params.key);
-  await User.destroy(query);
+  const user = await User.findOne(query);
+
+  if (user.id !== request.user.id) {
+    const error = new Error(
+      `Unauthorized action prohibited: user with id ${request.user.id} tried deleting user with id ${user.id}`
+    );
+    error.externalMessage = 'Unauthorized access.';
+    return next(error);
+  }
+
+  await user.destroy();
   response.end();
 });
 
