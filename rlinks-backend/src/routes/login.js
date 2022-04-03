@@ -8,6 +8,12 @@ const { User } = require('../db');
 router.post('/', async (request, response, next) => {
   const { username, password } = request.body;
 
+  if (username === 'public') {
+    const error = new Error('Login with public user attempted.');
+    error.externalMessage = 'Unauthorized access.';
+    return next(error);
+  }
+
   const user = await User.findOne({ where: { username } });
   const checked = user && (await bcrypt.compare(password, user.hash));
 

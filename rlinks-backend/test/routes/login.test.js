@@ -24,6 +24,15 @@ describe('Tests for the login functionality', () => {
     expect(data.error).toEqual('Invalid username and/or password.');
   };
 
+  test('POST /login with public as the username will be prohibited', async () => {
+    const { data } = await doAxiosPost('/login', { username: 'public', password: 'whatever' });
+
+    expect(data).toHaveProperty('error');
+    expect(data).not.toHaveProperty('token');
+    expect(data).not.toHaveProperty('username');
+    expect(data.error).toEqual('Unauthorized access.');
+  });
+
   test('POST /login with invalid username receives an error in response', async () => {
     await testLoginFail({
       username: 'invalid_username',
