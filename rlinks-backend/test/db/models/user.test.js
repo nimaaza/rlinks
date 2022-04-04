@@ -1,7 +1,14 @@
 const {
   User,
   functions: { clearDataBase },
-  constants: { SAMPLE_USERNAME, SAMPLE_PASSWORD, SAMPLE_PASSWORD_HASH },
+  constants: {
+    SAMPLE_USERNAME,
+    SAMPLE_PASSWORD,
+    SAMPLE_PASSWORD_HASH,
+    ANOTHER_SAMPLE_USERNAME,
+    ANOTHER_SAMPLE_PASSWORD,
+    ANOTHER_SAMPLE_PASSWORD_HASH,
+  },
 } = require('../../support');
 
 describe('Basic tests for the User model', () => {
@@ -32,13 +39,17 @@ describe('Basic tests for the User model', () => {
 
     const readUser = await User.findOne({ where: { username: SAMPLE_USERNAME } });
     checkReturnedUser(readUser);
-    expect(createdUser.username).toEqual(SAMPLE_USERNAME);
-    expect(await bcrypt.compare(SAMPLE_PASSWORD, createdUser.hash)).toBe(true);
+    expect(readUser.username).toEqual(SAMPLE_USERNAME);
+    expect(await bcrypt.compare(SAMPLE_PASSWORD, readUser.hash)).toBe(true);
 
-    const updatedUser = await readUser.update({ hash: '123456789' });
-    expect(updatedUser.hash).toBe('123456789');
+    const updatedUser = await readUser.update({
+      username: ANOTHER_SAMPLE_USERNAME,
+      hash: await ANOTHER_SAMPLE_PASSWORD_HASH,
+    });
+    expect(updatedUser.username).toBe(ANOTHER_SAMPLE_USERNAME);
+    expect(await bcrypt.compare(ANOTHER_SAMPLE_PASSWORD, updatedUser.hash)).toBe(true);
 
-    await readUser.destroy();
+    await updatedUser.destroy();
     const allUsersInDb = await User.findAll();
     expect(allUsersInDb).toHaveLength(1); // public user should be there
   });
