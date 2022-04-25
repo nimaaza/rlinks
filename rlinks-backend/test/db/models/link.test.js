@@ -6,8 +6,12 @@ const {
 } = require('../../support');
 
 describe('Basic tests for the Link model', () => {
+  const { getLinkPreviewData } = require('../../../src/helpers/previews');
+  let previewData;
+
   beforeEach(async () => {
     await clearDataBase();
+    previewData = await getLinkPreviewData(ANOTHER_SAMPLE_URL);
   });
 
   const checkReturnedLink = link => {
@@ -57,5 +61,30 @@ describe('Basic tests for the Link model', () => {
     await updatedLink.destroy();
     const allLinksInDb = await Link.findAll();
     expect(allLinksInDb).toHaveLength(0);
+  });
+
+  test('Link.transformer should return falsy for an invalid URL', async () => {
+    expect(await Link.transformer('invalid_url', 'public')).toBeFalsy();
+  });
+
+  test(`Link.transformer should return ${SAMPLE_SHORT_KEY} for existing ${SAMPLE_URL} incrementing its count`, async () => {
+    await Link.create({ url: SAMPLE_URL, shortKey: SAMPLE_SHORT_KEY });
+    const responseBefore = await Link.findOne({ where: { url: SAMPLE_URL } });
+    await Link.transformer(SAMPLE_URL, 'public');
+    const responseAfter = await Link.findOne({ where: { url: SAMPLE_URL } });
+
+    expect(responseAfter.shortKey).toEqual(responseBefore.shortKey);
+    expect(responseAfter.count).toEqual(responseBefore.count + 1);
+  });
+
+  test('Link.transformer should return required meta data and a new key for a valid URL not existing in the database', async () => {
+    const response = await Link.transformer(ANOTHER_SAMPLE_URL, 'public');
+
+    expect(typeof response.shortKey).toEqual('string');
+    expect(response.shortKey).toHaveLength(SHORT_KEY_LENGTH);
+    expect(response.shortKeyLength).toBe(response.shortKey.length);
+    expect(response.title).toEqual(previewData.title);
+    expect(response.description).toEqual(previewData.description);
+    expect(response.image).toEqual(previewData.image);
   });
 });
