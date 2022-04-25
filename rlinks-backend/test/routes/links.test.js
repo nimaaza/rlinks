@@ -151,17 +151,9 @@ describe('Tests for the end-point at /links for the pagination of produced short
 
   beforeAll(async () => {
     await clearDataBase();
-    urls.forEach(async url => {
-      await Link.transformer(url, 'public');
-    });
-
-    // The first test in this suit fails seemingly because the
-    // database is not in a consistent state when the tests begin
-    // to run. This following two queries delay the running of
-    // the tests and are meant as a quick and temporary work around
-    // until a better solution is found.
-    await Link.findAll({});
-    await User.findAll({});
+    await Promise.all(urls.map(url => {
+      return Link.transformer(url, 'public');
+    }));
   });
 
   test('Initial request to the end-point with cursor = 0 should return the first page of links sorted newest to oldest', async () => {
@@ -229,21 +221,13 @@ describe('Tests for the end-point at /links for the pagination of produced short
     user = await User.create({ username: SAMPLE_USERNAME, hash: await SAMPLE_PASSWORD_HASH });
     authorizationHeader = { Authorization: `Bearer ${loginToken(user.username, user.id)}` };
 
-    urls.forEach(async (url, index) => {
+    await Promise.all(urls.map((url, index) => {
       if (index < numberOfLinksWithPublicUser) {
-        await Link.transformer(url, 'public');
+        return Link.transformer(url, 'public');
       } else {
-        await Link.transformer(url, user.username);
+        return Link.transformer(url, user.username);
       }
-    });
-
-    // The first test in this suit fails seemingly because the
-    // database is not in a consistent state when the tests begin
-    // to run. This following two queries delay the running of
-    // the tests and are meant as a quick and temporary work around
-    // until a better solution is found.
-    await Link.findAll({});
-    await User.findAll({});
+    }));
   });
 
   test('Initial request to the end-point with cursor = 0, mine = true should return the first page of own links sorted newest to oldest', async () => {
