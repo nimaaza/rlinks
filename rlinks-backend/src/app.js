@@ -1,10 +1,7 @@
 const express = require('express');
 const path = require('path');
 
-const {
-  loggerMiddleware: logger,
-  errorHandlerMiddleware: errorHandler,
-} = require('./helpers/middlewares');
+const { loggerMiddleware: logger, errorHandlerMiddleware: errorHandler } = require('./helpers/middlewares');
 const { ENV } = require('./config');
 const { Link } = require('./db');
 const usersRouter = require('./routes/users');
@@ -39,8 +36,11 @@ app.get('/', (request, response) => {
 });
 
 app.get('/:key', async (request, response) => {
-  const shortKey = request.params.key;
-  const link = await Link.findOne({ where: { shortKey } });
+  const link = await Link.findOne({
+    where: {
+      shortKey: request.params.key,
+    },
+  });
 
   if (link) {
     await link.increment({ visits: 1 });
