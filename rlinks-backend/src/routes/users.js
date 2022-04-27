@@ -51,9 +51,8 @@ const validateUserData = async (username, password) => {
   if (!username || username.trim().length === 0) return createErrorObject('Username missing.');
   if (!password || password.trim().length === 0) return createErrorObject('Password missing.');
 
-  const existingUser = await User.findOne({ where: { username } });
-
-  if (existingUser) return createErrorObject('Username is already taken.');
+  const userExists = await User.findOne({ where: { username } });
+  if (userExists) return createErrorObject('Username is already taken.');
 };
 
 // allow both /users/:id and /users/:username to identify the resource
