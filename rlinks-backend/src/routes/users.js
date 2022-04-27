@@ -3,7 +3,7 @@ const router = require('express').Router();
 const { User } = require('../db');
 const { authorizationMiddleware: auth } = require('../helpers/middlewares');
 const passwordHash = require('../helpers/hash');
-const createErrorObject = require('../helpers/error');
+const { createErrorObject, externalAuthorizationErrorMessage } = require('../helpers/error');
 
 router.post('/', async (request, response, next) => {
   const { username, password } = request.body;
@@ -23,7 +23,7 @@ router.patch('/:key', auth, async (request, response, next) => {
   if (user.id !== request.user.id) {
     const error = createErrorObject(
       `Unauthorized action prohibited: user with id ${request.user.id} tried changing password for user with id ${user.id}`,
-      'Unauthorized access.'
+      externalAuthorizationErrorMessage
     );
     return next(error);
   }
@@ -40,7 +40,7 @@ router.delete('/:key', auth, async (request, response, next) => {
   if (user.id !== request.user.id) {
     const error = createErrorObject(
       `Unauthorized action prohibited: user with id ${request.user.id} tried deleting user with id ${user.id}`,
-      'Unauthorized access.'
+      externalAuthorizationErrorMessage
     );
     return next(error);
   }

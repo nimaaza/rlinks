@@ -5,4 +5,9 @@ const createErrorObject = (serverSideMessage, userSideMessage) => {
   return error;
 };
 
-module.exports = createErrorObject;
+const externalAuthorizationErrorMessage = 'Unauthorized access.';
+
+module.exports = {
+  externalAuthorizationErrorMessage,
+  createErrorObject,
+};

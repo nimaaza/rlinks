@@ -2,9 +2,7 @@ const jwt = require('jsonwebtoken');
 
 const { JWT_SECRET } = require('../config');
 const logger = require('./logger');
-const createErrorObject = require('./error');
-
-const externalAuthorizationErrorMessage = 'Unauthorized access.';
+const { createErrorObject, externalAuthorizationErrorMessage } = require('./error');
 
 const authorizationMiddleware = (request, response, next) => {
   const authorization = request.get('authorization');

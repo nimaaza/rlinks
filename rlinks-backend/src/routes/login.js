@@ -4,13 +4,13 @@ const jwt = require('jsonwebtoken');
 
 const { JWT_SECRET } = require('../config');
 const { User } = require('../db');
-const createErrorObject = require('../helpers/error');
+const { createErrorObject, externalAuthorizationErrorMessage } = require('../helpers/error');
 
 router.post('/', async (request, response, next) => {
   const { username, password } = request.body;
 
   if (username === 'public') {
-    const error = createErrorObject('Login with public user attempted.', 'Unauthorized access.');
+    const error = createErrorObject('Login with public user attempted.', externalAuthorizationErrorMessage);
     return next(error);
   }
 
