@@ -24,7 +24,6 @@ app.use('/users', usersRouter);
 app.use('/login', loginRouter);
 app.use('/links', linksRouter);
 
-// the next two routes are for testing purposes
 if (ENV === 'TEST') {
   app.get('/live', (request, response) => {
     response.status(200).send('rlinks is live!');
