@@ -6,7 +6,7 @@ if (!['DEV', 'SEED', 'TEST', 'PROD'].includes(ENV)) {
   throw new Error('Undefine environment! Exiting...');
 }
 
-const setHttpLink = () => {
+const setServerConfiguration = () => {
   let SERVER_URL, PORT;
 
   if (['DEV', 'SEED', 'PROD'].includes(ENV)) {
@@ -24,7 +24,7 @@ const setHttpLink = () => {
   return { SERVER_URL, PORT };
 };
 
-const setDataBaseVariables = () => {
+const setDataBaseConfiguration = () => {
   let DB_HOST, DB_LOGGER, DB_USERNAME, DB_PASSWORD, DB_NAME;
 
   if (ENV === 'DEV' || ENV === 'SEED') {
@@ -51,8 +51,8 @@ const setDataBaseVariables = () => {
   return { DB_HOST, DB_LOGGER, DB_USERNAME, DB_PASSWORD, DB_NAME };
 };
 
-const { SERVER_URL, PORT } = setHttpLink();
-const { DB_HOST, DB_LOGGER, DB_USERNAME, DB_PASSWORD, DB_NAME } = setDataBaseVariables();
+const { SERVER_URL, PORT } = setServerConfiguration();
+const { DB_HOST, DB_LOGGER, DB_USERNAME, DB_PASSWORD, DB_NAME } = setDataBaseConfiguration();
 const DB_PORT = process.env.DB_PORT || 5432;
 const PAGINATION_LIMIT = ['DEV', 'TEST'].includes(ENV) ? 5 : 10;
 const SHORT_KEY_LENGTH = 7;
