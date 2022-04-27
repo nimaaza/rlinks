@@ -57,14 +57,14 @@ router.delete('/:id', auth, async (request, response, next) => {
 
   if (user.id !== request.user.id) {
     const error = createErrorObject(
-      `Unauthorized action prohibited: deleting link not belonging to user with id ${request.user.id}.`,
+      `Unauthorized action prohibited: deleting link not belonging to user ${request.user.id}.`,
       externalAuthorizationErrorMessage
     );
     return next(error);
-  } else {
-    await link.destroy();
-    response.json({ message: 'Link deleted.' });
   }
+
+  await link.destroy();
+  response.json({ message: 'Link deleted.' });
 });
 
 module.exports = router;
