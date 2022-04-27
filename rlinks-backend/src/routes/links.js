@@ -36,12 +36,15 @@ router.post('/', setUser, async (request, response) => {
   response.json({ links, hasNext, cursor: cursor + 1 });
 });
 
-router.delete('/:id', auth, async (request, response, next) => {
-  const { id } = request.params;
-  const link = await Link.findOne({ where: { id } });
+router.delete('/:linkId', auth, async (request, response, next) => {
+  const { linkId } = request.params;
+  const link = await Link.findOne({ where: { id: linkId } });
 
   if (!link) {
-    const error = createErrorObject(`Link with given ID (${id}) does not exist.`, externalAuthorizationErrorMessage);
+    const error = createErrorObject(
+      `Link with given ID (${linkId}) does not exist.`,
+      externalAuthorizationErrorMessage
+    );
     return next(error);
   }
 
