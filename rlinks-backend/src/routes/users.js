@@ -17,8 +17,7 @@ router.post('/', async (request, response, next) => {
 });
 
 router.patch('/:key', auth, async (request, response, next) => {
-  const query = queryGenerator(request.params.key);
-  const user = await User.findOne(query);
+  const user = await User.findOne(queryGenerator(request.params.key));
 
   if (user.id !== request.user.id) {
     const error = createErrorObject(
@@ -34,8 +33,7 @@ router.patch('/:key', auth, async (request, response, next) => {
 });
 
 router.delete('/:key', auth, async (request, response, next) => {
-  const query = queryGenerator(request.params.key);
-  const user = await User.findOne(query);
+  const user = await User.findOne(queryGenerator(request.params.key));
 
   if (user.id !== request.user.id) {
     const error = createErrorObject(
