@@ -15,27 +15,23 @@ router.post('/shorten', setUser, async (request, response, next) => {
   if (shortLink) {
     response.json(shortLink);
   } else {
-    const error = createErrorObject('Invalid URL!');
-    next(error);
+    next(createErrorObject('Invalid URL!'));
   }
 });
 
 router.post('/', setUser, async (request, response) => {
   const { mode, cursor, mine } = request.body;
-  const query = createPaginationQuery(mode, cursor);
-
   let links;
 
   if (mine && request.user) {
     const username = request.user.username;
     const user = await User.findOne({ where: { username } });
-    links = await user.getLinks(query);
+    links = await user.getLinks(createPaginationQuery(mode, cursor));
   } else {
-    links = await Link.findAll(query);
+    links = await Link.findAll(createPaginationQuery(mode, cursor));
   }
 
   links = links.map(link => link.dataValues);
-
   const hasNext = links.length === PAGINATION_LIMIT;
   response.json({ links, hasNext, cursor: cursor + 1 });
 });
