@@ -4,6 +4,7 @@ const { PAGINATION_LIMIT } = require('../config');
 const { setUserMiddleware: setUser, authorizationMiddleware: auth } = require('../helpers/middlewares');
 const { Link, User } = require('../db');
 const { createPaginationQuery } = require('../helpers/pagination');
+const createErrorObject = require('../helpers/error');
 
 router.post('/shorten', setUser, async (request, response, next) => {
   const url = request.body.url;
@@ -14,8 +15,7 @@ router.post('/shorten', setUser, async (request, response, next) => {
   if (shortLink) {
     response.json(shortLink);
   } else {
-    const error = new Error('Invalid URL!');
-    error.externalMessage = 'Invalid URL!';
+    const error = createErrorObject('Invalid URL!');
     next(error);
   }
 });
@@ -45,24 +45,25 @@ router.delete('/:id', auth, async (request, response, next) => {
   const link = await Link.findOne({ where: { id } });
 
   if (!link) {
-    const error = new Error(`Link with given ID (${id}) does not exist.`);
-    error.externalMessage = 'Unauthorized access.';
+    const error = createErrorObject(`Link with given ID (${id}) does not exist.`, 'Unauthorized access.');
     return next(error);
   }
 
   const user = await link.getUser();
 
   if (user.username === 'public') {
-    const error = new Error('Unauthorized action prohibited: deleting link not belonging to the public user.');
-    error.externalMessage = 'Unauthorized access.';
+    const error = createErrorObject(
+      'Unauthorized action prohibited: deleting link not belonging to the public user.',
+      'Unauthorized access.'
+    );
     return next(error);
   }
 
   if (user.id !== request.user.id) {
-    const error = new Error(
-      `Unauthorized action prohibited: deleting link not belonging to user with id ${request.user.id}.`
+    const error = createErrorObject(
+      `Unauthorized action prohibited: deleting link not belonging to user with id ${request.user.id}.`,
+      'Unauthorized access.'
     );
-    error.externalMessage = 'Unauthorized access.';
     return next(error);
   } else {
     await link.destroy();

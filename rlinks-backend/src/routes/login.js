@@ -4,13 +4,13 @@ const jwt = require('jsonwebtoken');
 
 const { JWT_SECRET } = require('../config');
 const { User } = require('../db');
+const createErrorObject = require('../helpers/error');
 
 router.post('/', async (request, response, next) => {
   const { username, password } = request.body;
 
   if (username === 'public') {
-    const error = new Error('Login with public user attempted.');
-    error.externalMessage = 'Unauthorized access.';
+    const error = createErrorObject('Login with public user attempted.', 'Unauthorized access.');
     return next(error);
   }
 
@@ -21,8 +21,7 @@ router.post('/', async (request, response, next) => {
     const token = jwt.sign({ username: user.username, id: user.id }, JWT_SECRET);
     response.status(200).json({ token, username: user.username });
   } else {
-    const error = new Error('Invalid username and/or password.');
-    error.externalMessage = 'Invalid username and/or password.';
+    const error = createErrorObject('Invalid username and/or password.');
     next(error);
   }
 });

@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 
 const { JWT_SECRET } = require('../config');
 const logger = require('./logger');
+const createErrorObject = require('./error');
 
 const externalAuthorizationErrorMessage = 'Unauthorized access.';
 
@@ -16,8 +17,10 @@ const authorizationMiddleware = (request, response, next) => {
         request.user = { username, id };
         next();
       } else {
-        const error = new Error(`Invalid token: missing data (${id ? 'username is missing' : 'user id is missing'}).`);
-        error.externalMessage = externalAuthorizationErrorMessage;
+        const error = createErrorObject(
+          `Invalid token: missing data (${id ? 'username is missing' : 'user id is missing'}).`,
+          externalAuthorizationErrorMessage
+        );
         next(error);
       }
     } catch (error) {
@@ -25,8 +28,7 @@ const authorizationMiddleware = (request, response, next) => {
       next(error);
     }
   } else {
-    const error = new Error('Token is missing.');
-    error.externalMessage = externalAuthorizationErrorMessage;
+    const error = createErrorObject('Token is missing.', externalAuthorizationErrorMessage);
     next(error);
   }
 };

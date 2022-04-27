@@ -3,6 +3,7 @@ const router = require('express').Router();
 const { User } = require('../db');
 const { authorizationMiddleware: auth } = require('../helpers/middlewares');
 const passwordHash = require('../helpers/hash');
+const createErrorObject = require('../helpers/error');
 
 router.post('/', async (request, response, next) => {
   const { username, password } = request.body;
@@ -55,13 +56,6 @@ const validateUserData = async (username, password) => {
   const existingUser = await User.findOne({ where: { username } });
 
   if (existingUser) return createErrorObject('Username is already taken.');
-};
-
-const createErrorObject = (serverSideMessage, userSideMessage) => {
-  const error = new Error(serverSideMessage);
-  error.externalMessage = userSideMessage || serverSideMessage;
-
-  return error;
 };
 
 // allow both /users/:id and /users/:username to identify the resource
