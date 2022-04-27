@@ -7,26 +7,12 @@ const passwordHash = require('../helpers/hash');
 router.post('/', async (request, response, next) => {
   const { username, password } = request.body;
 
-  if (!username || username.trim().length === 0) {
-    const error = createErrorObject('Username missing.');
-    return next(error);
-  }
+  const validationError = await validateUserData(username, password);
+  if (validationError) return next(validationError);
 
-  if (!password || password.trim().length === 0) {
-    const error = createErrorObject('Password missing.');
-    return next(error);
-  }
-
-  const existingUser = await User.findOne({ where: { username } });
-
-  if (existingUser) {
-    const error = createErrorObject('Username is already taken.');
-    return next(error);
-  } else {
-    const hash = await passwordHash(password);
-    const user = await User.create({ username, hash });
-    return response.json({ username: user.username });
-  }
+  const hash = await passwordHash(password);
+  const user = await User.create({ username, hash });
+  return response.json({ username: user.username });
 });
 
 router.patch('/:key', auth, async (request, response, next) => {
@@ -62,8 +48,14 @@ router.delete('/:key', auth, async (request, response, next) => {
   response.end();
 });
 
-// allow both /users/:id and /users/:username to identify the resource
-const queryGenerator = param => (Number(param) ? { where: { id: param } } : { where: { username: param } });
+const validateUserData = async (username, password) => {
+  if (!username || username.trim().length === 0) return createErrorObject('Username missing.');
+  if (!password || password.trim().length === 0) return createErrorObject('Password missing.');
+
+  const existingUser = await User.findOne({ where: { username } });
+
+  if (existingUser) return createErrorObject('Username is already taken.');
+};
 
 const createErrorObject = (serverSideMessage, userSideMessage) => {
   const error = new Error(serverSideMessage);
@@ -71,5 +63,8 @@ const createErrorObject = (serverSideMessage, userSideMessage) => {
 
   return error;
 };
+
+// allow both /users/:id and /users/:username to identify the resource
+const queryGenerator = param => (Number(param) ? { where: { id: param } } : { where: { username: param } });
 
 module.exports = router;
