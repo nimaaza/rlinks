@@ -7,26 +7,17 @@ const { createErrorObject, externalAuthorizationErrorMessage } = require('./erro
 const authorizationMiddleware = (request, response, next) => {
   const authorization = request.get('authorization');
 
-  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    const token = authorization.substring(7);
-    try {
-      const { username, id } = jwt.verify(token, JWT_SECRET);
-      if (username && id) {
-        request.user = { username, id };
-        next();
-      } else {
-        const error = createErrorObject(
-          `Invalid token: missing data (${id ? 'username is missing' : 'user id is missing'}).`,
-          externalAuthorizationErrorMessage
-        );
-        next(error);
-      }
-    } catch (error) {
-      error.externalMessage = externalAuthorizationErrorMessage;
+  try {
+    const { user, error } = verifyToke(authorization);
+
+    if (user) {
+      request.user = user;
+      next();
+    } else if (error) {
       next(error);
     }
-  } else {
-    const error = createErrorObject('Token is missing.', externalAuthorizationErrorMessage);
+  } catch (error) {
+    error.externalMessage = externalAuthorizationErrorMessage;
     next(error);
   }
 };
@@ -34,21 +25,21 @@ const authorizationMiddleware = (request, response, next) => {
 const setUserMiddleware = (request, response, next) => {
   const authorization = request.get('authorization');
 
-  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    const token = authorization.substring(7);
-    try {
-      const { username, id } = jwt.verify(token, JWT_SECRET);
-      if (username && id) {
-        request.user = { username, id };
-        next();
-      }
-    } catch (error) {
-      error.externalMessage = externalAuthorizationErrorMessage;
+  try {
+    const { user, error } = verifyToke(authorization);
+
+    if (user) {
+      request.user = user;
+      next();
+    } else if (error && error.externalMessage.startsWith('Invalid token')) {
       next(error);
+    } else {
+      request.publicUser = true;
+      next();
     }
-  } else {
-    request.publicUser = true;
-    next();
+  } catch (error) {
+    error.externalMessage = externalAuthorizationErrorMessage;
+    next(error);
   }
 };
 
@@ -77,6 +68,27 @@ const errorHandlerMiddleware = (error, request, response, next) => {
 
   response.json({ error: error.externalMessage });
   next();
+};
+
+const verifyToke = authorization => {
+  const result = {};
+
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    const token = authorization.substring(7);
+    const { username, id } = jwt.verify(token, JWT_SECRET);
+    if (username && id) {
+      result.user = { username, id };
+    } else {
+      result.error = createErrorObject(
+        `Invalid token: missing data (${id ? 'username is missing' : 'user id is missing'}).`,
+        externalAuthorizationErrorMessage
+      );
+    }
+  } else {
+    result.error = createErrorObject('Token is missing.', externalAuthorizationErrorMessage);
+  }
+
+  return result;
 };
 
 module.exports = { authorizationMiddleware, setUserMiddleware, loggerMiddleware, errorHandlerMiddleware };
