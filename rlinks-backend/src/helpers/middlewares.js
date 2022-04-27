@@ -5,10 +5,8 @@ const logger = require('./logger');
 const { createErrorObject, externalAuthorizationErrorMessage } = require('./error');
 
 const authorizationMiddleware = (request, response, next) => {
-  const authorization = request.get('authorization');
-
   try {
-    const { user, error } = verifyToke(authorization);
+    const { user, error } = verifyToke(request.get('authorization'));
 
     if (user) {
       request.user = user;
@@ -23,10 +21,8 @@ const authorizationMiddleware = (request, response, next) => {
 };
 
 const setUserMiddleware = (request, response, next) => {
-  const authorization = request.get('authorization');
-
   try {
-    const { user, error } = verifyToke(authorization);
+    const { user, error } = verifyToke(request.get('authorization'));
 
     if (user) {
       request.user = user;
