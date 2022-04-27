@@ -8,22 +8,19 @@ router.post('/', async (request, response, next) => {
   const { username, password } = request.body;
 
   if (!username || username.trim().length === 0) {
-    const error = new Error('Username missing.');
-    error.externalMessage = 'Username missing.';
+    const error = createErrorObject('Username missing.');
     return next(error);
   }
 
   if (!password || password.trim().length === 0) {
-    const error = new Error('Password missing.');
-    error.externalMessage = 'Password missing.';
+    const error = createErrorObject('Password missing.');
     return next(error);
   }
 
   const existingUser = await User.findOne({ where: { username } });
 
   if (existingUser) {
-    const error = new Error('Username is already taken.');
-    error.externalMessage = 'Username is already taken.';
+    const error = createErrorObject('Username is already taken.');
     return next(error);
   } else {
     const hash = await passwordHash(password);
@@ -37,10 +34,10 @@ router.patch('/:key', auth, async (request, response, next) => {
   const user = await User.findOne(query);
 
   if (user.id !== request.user.id) {
-    const error = new Error(
-      `Unauthorized action prohibited: user with id ${request.user.id} tried changing password for user with id ${user.id}`
+    const error = createErrorObject(
+      `Unauthorized action prohibited: user with id ${request.user.id} tried changing password for user with id ${user.id}`,
+      'Unauthorized access.'
     );
-    error.externalMessage = 'Unauthorized access.';
     return next(error);
   }
 
@@ -54,10 +51,10 @@ router.delete('/:key', auth, async (request, response, next) => {
   const user = await User.findOne(query);
 
   if (user.id !== request.user.id) {
-    const error = new Error(
-      `Unauthorized action prohibited: user with id ${request.user.id} tried deleting user with id ${user.id}`
+    const error = createErrorObject(
+      `Unauthorized action prohibited: user with id ${request.user.id} tried deleting user with id ${user.id}`,
+      'Unauthorized access.'
     );
-    error.externalMessage = 'Unauthorized access.';
     return next(error);
   }
 
@@ -67,5 +64,12 @@ router.delete('/:key', auth, async (request, response, next) => {
 
 // allow both /users/:id and /users/:username to identify the resource
 const queryGenerator = param => (Number(param) ? { where: { id: param } } : { where: { username: param } });
+
+const createErrorObject = (serverSideMessage, userSideMessage) => {
+  const error = new Error(serverSideMessage);
+  error.externalMessage = userSideMessage || serverSideMessage;
+
+  return error;
+};
 
 module.exports = router;
