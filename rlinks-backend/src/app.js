@@ -11,6 +11,8 @@ const usersRouter = require('./routes/users');
 const loginRouter = require('./routes/login');
 const linksRouter = require('./routes/links');
 
+const errorPage = path.join(__dirname, 'public', 'error.html');
+
 const app = express();
 
 app.use(express.static(path.join(__dirname, '/public')));
@@ -45,12 +47,12 @@ app.get('/:key', async (request, response) => {
     await link.increment({ visits: 1 });
     response.redirect(link.url);
   } else {
-    response.sendFile(path.join(__dirname, 'public', 'error.html'));
+    response.sendFile(errorPage);
   }
 });
 
 app.get('*', (request, response) => {
-  response.sendFile(path.join(__dirname, 'public', 'error.html'));
+  response.sendFile(errorPage);
 });
 
 app.use(errorHandler);
