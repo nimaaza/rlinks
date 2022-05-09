@@ -27,36 +27,14 @@ router.post('/', setUser, async (request, response) => {
 });
 
 router.delete('/:linkId', auth, async (request, response, next) => {
-  const link = await Link.findOne({ where: { id: request.params.linkId } });
+  const { link, error } = await authorizeUser(request.params.linkId, request.user);
 
-  if (!link) {
-    const error = createErrorObject(
-      `Link with given ID (${request.params.linkId}) does not exist.`,
-      externalAuthorizationErrorMessage
-    );
-    return next(error);
+  if (error) {
+    next(error);
+  } else {
+    await link.destroy();
+    response.json({ message: 'Link deleted.' });
   }
-
-  const user = await link.getUser();
-
-  if (user.username === 'public') {
-    const error = createErrorObject(
-      'Unauthorized action prohibited: deleting link not belonging to the public user.',
-      externalAuthorizationErrorMessage
-    );
-    return next(error);
-  }
-
-  if (user.id !== request.user.id) {
-    const error = createErrorObject(
-      `Unauthorized action prohibited: deleting link not belonging to user ${request.user.id}.`,
-      externalAuthorizationErrorMessage
-    );
-    return next(error);
-  }
-
-  await link.destroy();
-  response.json({ message: 'Link deleted.' });
 });
 
 const fetchLinks = async ({ mode, cursor, mine, username }) => {
@@ -70,6 +48,32 @@ const fetchLinks = async ({ mode, cursor, mine, username }) => {
   }
 
   return links.map(link => link.dataValues);
+};
+
+const authorizeUser = async (linkId, requestingUser) => {
+  let error;
+  const link = await Link.findOne({ where: { id: linkId } });
+
+  if (!link) {
+    error = createErrorObject(`Link with given ID (${linkId}) does not exist.`, externalAuthorizationErrorMessage);
+    return { error };
+  }
+
+  const user = await link.getUser();
+
+  if (user.username === 'public') {
+    error = createErrorObject(
+      'Unauthorized action prohibited: deleting link belonging to the public user.',
+      externalAuthorizationErrorMessage
+    );
+  } else if (user.id !== requestingUser.id) {
+    error = createErrorObject(
+      `Unauthorized action prohibited: deleting link not belonging to user ${requestingUser.id}.`,
+      externalAuthorizationErrorMessage
+    );
+  }
+
+  return { link, error };
 };
 
 module.exports = router;
