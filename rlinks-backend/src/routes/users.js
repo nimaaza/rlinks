@@ -8,7 +8,7 @@ const { createErrorObject, externalAuthorizationErrorMessage } = require('../hel
 router.post('/', async (request, response, next) => {
   const { username, password } = request.body;
 
-  const validationError = await validateUserData(username, password);
+  const validationError = await validateUserData(request.body);
   if (validationError) return next(validationError);
 
   const hash = await generateHash(password);
@@ -58,5 +58,8 @@ const authorizeUser = async (userIdentifierKey, requestingUser) => {
 
   return { user, error };
 };
+
+// allow both /users/:id and /users/:username paths to identify the user resource
+const queryGenerator = key => (Number(key) ? { where: { id: key } } : { where: { username: key } });
 
 module.exports = router;
