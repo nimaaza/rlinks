@@ -27,12 +27,11 @@ router.post('/', setUser, async (request, response) => {
 });
 
 router.delete('/:linkId', auth, async (request, response, next) => {
-  const { linkId } = request.params;
-  const link = await Link.findOne({ where: { id: linkId } });
+  const link = await Link.findOne({ where: { id: request.params.linkId } });
 
   if (!link) {
     const error = createErrorObject(
-      `Link with given ID (${linkId}) does not exist.`,
+      `Link with given ID (${request.params.linkId}) does not exist.`,
       externalAuthorizationErrorMessage
     );
     return next(error);
