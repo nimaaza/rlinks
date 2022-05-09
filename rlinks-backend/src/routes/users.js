@@ -17,19 +17,15 @@ router.post('/', async (request, response, next) => {
 });
 
 router.patch('/:key', auth, async (request, response, next) => {
-  const user = await User.findOne(queryGenerator(request.params.key));
+  const { user, error } = await authorizeUser(request.params.key, request.user);
 
-  if (user.id !== request.user.id) {
-    const error = createErrorObject(
-      `Unauthorized action prohibited: user with id ${request.user.id} tried changing password for user with id ${user.id}`,
-      externalAuthorizationErrorMessage
-    );
-    return next(error);
+  if (error) {
+    next(error);
+  } else {
+    const hash = await generateHash(request.body.password);
+    await user.update({ hash });
+    response.json({ username: user.username });
   }
-
-  const hash = await generateHash(request.body.password);
-  await user.update({ hash });
-  response.json({ username: user.username });
 });
 
 router.delete('/:key', auth, async (request, response, next) => {
@@ -55,7 +51,16 @@ const validateUserData = async (username, password) => {
   if (userExists) return createErrorObject('Username is already taken.');
 };
 
-// allow both /users/:id and /users/:username to identify the resource
-const queryGenerator = param => (Number(param) ? { where: { id: param } } : { where: { username: param } });
+const authorizeUser = async (userIdentifierKey, requestingUser) => {
+  const internalAuthorizationErrorMessage = `Unauthorized action by user with id ${requestingUser.id} prohibited.`;
+  const user = await User.findOne(queryGenerator(userIdentifierKey));
+  let error;
+
+  if (user.id !== requestingUser.id) {
+    error = createErrorObject(internalAuthorizationErrorMessage, externalAuthorizationErrorMessage);
+  }
+
+  return { user, error };
+};
 
 module.exports = router;
