@@ -7,10 +7,9 @@ const { createPaginationQuery } = require('../helpers/pagination');
 const { createErrorObject, externalAuthorizationErrorMessage } = require('../helpers/error');
 
 router.post('/shorten', setUser, async (request, response, next) => {
-  const url = request.body.url;
   const username = request.publicUser ? 'public' : request.user.username;
 
-  const shortLink = await Link.transformer(url, username);
+  const shortLink = await Link.transformer(request.body.url, username);
 
   if (shortLink) {
     response.json(shortLink);
