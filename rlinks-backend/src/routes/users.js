@@ -8,7 +8,7 @@ const { createErrorObject, externalAuthorizationErrorMessage } = require('../hel
 router.post('/', async (request, response, next) => {
   const { username, password } = request.body;
 
-  const validationError = await validateUserData(request.body);
+  const validationError = await validateUserData(username, password);
   if (validationError) return next(validationError);
 
   const hash = await generateHash(password);
