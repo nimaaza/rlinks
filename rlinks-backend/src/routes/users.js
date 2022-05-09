@@ -29,18 +29,14 @@ router.patch('/:key', auth, async (request, response, next) => {
 });
 
 router.delete('/:key', auth, async (request, response, next) => {
-  const user = await User.findOne(queryGenerator(request.params.key));
+  const { user, error } = await authorizeUser(request.params.key, request.user);
 
-  if (user.id !== request.user.id) {
-    const error = createErrorObject(
-      `Unauthorized action prohibited: user with id ${request.user.id} tried deleting user with id ${user.id}`,
-      externalAuthorizationErrorMessage
-    );
-    return next(error);
+  if (error) {
+    next(error);
+  } else {
+    await user.destroy();
+    response.end();
   }
-
-  await user.destroy();
-  response.end();
 });
 
 const validateUserData = async (username, password) => {
