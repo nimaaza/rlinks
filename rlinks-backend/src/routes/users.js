@@ -2,7 +2,7 @@ const router = require('express').Router();
 
 const { User } = require('../db');
 const { authorizationMiddleware: auth } = require('../helpers/middlewares');
-const passwordHash = require('../helpers/hash');
+const generateHash = require('../helpers/hash');
 const { createErrorObject, externalAuthorizationErrorMessage } = require('../helpers/error');
 
 router.post('/', async (request, response, next) => {
@@ -11,7 +11,7 @@ router.post('/', async (request, response, next) => {
   const validationError = await validateUserData(username, password);
   if (validationError) return next(validationError);
 
-  const hash = await passwordHash(password);
+  const hash = await generateHash(password);
   const user = await User.create({ username, hash });
   return response.json({ username: user.username });
 });
@@ -27,7 +27,7 @@ router.patch('/:key', auth, async (request, response, next) => {
     return next(error);
   }
 
-  const hash = await passwordHash(request.body.password);
+  const hash = await generateHash(request.body.password);
   await user.update({ hash });
   response.json({ username: user.username });
 });
