@@ -15,14 +15,12 @@ router.post('/', async (request, response, next) => {
   }
 
   const user = await User.findOne({ where: { username } });
-  const checked = user && (await bcrypt.compare(password, user.hash));
 
-  if (checked) {
-    const token = jwt.sign({ username: user.username, id: user.id }, JWT_SECRET);
-    response.status(200).json({ token, username });
+  if (await credentialsValid(user, password)) {
   } else {
     next(createErrorObject('Invalid username and/or password.'));
   }
 });
 
+const credentialsValid = async (user, password) => user && (await bcrypt.compare(password, user.hash));
 module.exports = router;
