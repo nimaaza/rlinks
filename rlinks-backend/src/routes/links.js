@@ -20,20 +20,11 @@ router.post('/shorten', setUser, async (request, response, next) => {
 });
 
 router.post('/', setUser, async (request, response) => {
-  const { mode, cursor, mine } = request.body;
-  let links;
-
-  if (mine && request.user) {
-    const username = request.user.username;
-    const user = await User.findOne({ where: { username } });
-    links = await user.getLinks(createPaginationQuery(mode, cursor));
-  } else {
-    links = await Link.findAll(createPaginationQuery(mode, cursor));
-  }
-
-  links = links.map(link => link.dataValues);
+  const links = await fetchLinks({ ...request.body, ...request.user });
   const hasNext = links.length === PAGINATION_LIMIT;
-  response.json({ links, hasNext, cursor: cursor + 1 });
+  const cursor = request.body.cursor + 1;
+
+  response.json({ links, hasNext, cursor });
 });
 
 router.delete('/:linkId', auth, async (request, response, next) => {
@@ -69,5 +60,18 @@ router.delete('/:linkId', auth, async (request, response, next) => {
   await link.destroy();
   response.json({ message: 'Link deleted.' });
 });
+
+const fetchLinks = async ({ mode, cursor, mine, username }) => {
+  let links;
+
+  if (mine && username) {
+    const user = await User.findOne({ where: { username } });
+    links = await user.getLinks(createPaginationQuery(mode, cursor));
+  } else {
+    links = await Link.findAll(createPaginationQuery(mode, cursor));
+  }
+
+  return links.map(link => link.dataValues);
+};
 
 module.exports = router;
