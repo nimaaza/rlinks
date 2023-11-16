@@ -64,4 +64,25 @@ describe('Tests for the login functionality', () => {
     expect(verifiedToken.username).toEqual(SAMPLE_USERNAME);
     expect(verifiedToken.id).toEqual(userId);
   });
+
+  test('POST /login with valid username and valid password receives a verifiable token with expiry date', async () => {
+    const correctCredentials = {
+      username: SAMPLE_USERNAME,
+      password: SAMPLE_PASSWORD,
+    };
+    const { data } = await doAxiosPost('/login', correctCredentials);
+
+    expect(data).toHaveProperty('token');
+    expect(data).toHaveProperty('username');
+    expect(data.username).toEqual(SAMPLE_USERNAME);
+
+    const verifiedToken = jwt.verify(data.token, JWT_SECRET);
+    expect(verifiedToken).toHaveProperty('username');
+    expect(verifiedToken).toHaveProperty('id');
+    expect(verifiedToken).toHaveProperty('iat');
+    expect(verifiedToken).toHaveProperty('exp');
+    expect(verifiedToken.exp - verifiedToken.iat).toEqual(2 * 24 * 60 * 60); // 2 days in seconds
+    expect(verifiedToken.username).toEqual(SAMPLE_USERNAME);
+    expect(verifiedToken.id).toEqual(userId);
+  });
 });

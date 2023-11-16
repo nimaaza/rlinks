@@ -27,7 +27,7 @@ const credentialsValid = async (user, password) => user && (await bcrypt.compare
 
 const generateToken = user => {
   const { username } = user;
-  const token = jwt.sign({ username: user.username, id: user.id }, JWT_SECRET);
+  const token = jwt.sign({ username: user.username, id: user.id }, JWT_SECRET, { expiresIn: '2d' });
   return { token, username };
 };
 
